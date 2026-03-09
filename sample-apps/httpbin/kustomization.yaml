@@ -12,5 +12,5 @@ patches:
       path: /spec/rules/0/host
       value: "httpbin.192.168.1.30.nip.io"
     - op: replace
-      path: /spec/tls/0/hosts/0
-      value: "httpbin.192.168.1.30.nip.io"
+      path: /spec/tls/0/hosts
+      value: ["httpbin.192.168.1.30.nip.io"]
