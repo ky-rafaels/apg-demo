@@ -1,0 +1,36 @@
+---
+apiVersion: infrastructure.cluster.konvoy.d2iq.io/v1alpha1
+kind: PreprovisionedInventory
+metadata:
+  name: nkp-workload-1-control-plane
+  namespace: default
+  labels:
+    cluster.x-k8s.io/cluster-name: nkp-workload-1 
+    clusterctl.cluster.x-k8s.io/move: ""
+spec:
+  hosts:
+    - address: 192.168.1.48
+  sshConfig:
+    port: 22
+    user: nutanix
+    privateKeyRef:
+      name: nkp-workload-1-ssh-key
+      namespace: default
+---
+apiVersion: infrastructure.cluster.konvoy.d2iq.io/v1alpha1
+kind: PreprovisionedInventory
+metadata:
+  name: nkp-workload-1-md-0
+  namespace: default
+  labels:
+    cluster.x-k8s.io/cluster-name: nkp-workload-1
+    clusterctl.cluster.x-k8s.io/move: ""
+spec:
+  hosts:
+    - {} 
+  sshConfig:
+    port: 22
+    user: nutanix
+    privateKeyRef:
+      name: nkp-workload-1-ssh-key
+      namespace: default
