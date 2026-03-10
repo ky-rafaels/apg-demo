@@ -1,0 +1,68 @@
+---
+# Ingress for the TAK Server REST API (HTTPS passthrough)
+# Uses NGINX ingress controller with SSL passthrough enabled.
+# TAK Server terminates TLS itself using its own certificates,
+# so we use passthrough rather than TLS termination at the ingress.
+#
+# Prerequisites:
+#   helm install ingress-nginx ingress-nginx/ingress-nginx \
+#     --set controller.extraArgs.enable-ssl-passthrough=true
+#
+# Replace tak.example.com with your actual domain.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tak-api-ingress
+  namespace: tak-server
+  labels:
+    app.kubernetes.io/name: tak-server
+    app.kubernetes.io/component: api
+  annotations:
+    cert-manager.io/cluster-issuer: selfsigned-issuer
+    kubernetes.io/ingress.class: kommander-traefik
+    cert-manager.io/duration: 2160h # 90 days
+    cert-manager.io/renew-before: 360h # 15 days
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  ingressClassName: kommander-traefik 
+  rules:
+    - host: tak.example.com   # <-- CHANGE THIS
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tak-api
+                port:
+                  number: 8443
+---
+# Separate Ingress for the Admin UI on port 8444
+# Restrict access by IP using the annotation below
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tak-admin-ingress
+  namespace: tak-server
+  labels:
+    app.kubernetes.io/name: tak-server
+    app.kubernetes.io/component: api
+  annotations:
+    cert-manager.io/cluster-issuer: selfsigned-issuer
+    kubernetes.io/ingress.class: kommander-traefik
+    cert-manager.io/duration: 2160h # 90 days
+    cert-manager.io/renew-before: 360h # 15 days
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  ingressClassName: kommander-traefik
+  rules:
+    - host: tak-admin.example.com   # <-- CHANGE THIS
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tak-api
+                port:
+                  number: 8444

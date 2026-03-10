@@ -1,0 +1,82 @@
+---
+# TAK Server ConfigMap
+# Contains non-sensitive configuration including the CoreConfig.xml template.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tak-server-config
+  namespace: tak-server
+  labels:
+    app.kubernetes.io/name: tak-server
+    app.kubernetes.io/component: config
+data:
+  # Core TAK Server configuration file.
+  # Adjust ports, auth, federation, and other settings as needed.
+  # Full documentation: src/docs/TAK_Server_Configuration_Guide.pdf
+  CoreConfig.xml: |
+    <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    <Configuration>
+      <network multicastTTL="5" version="3">
+        <input auth="x509" _name="ssl" protocol="tls" port="8089" coreVersion="2"/>
+        <input auth="anonymous" _name="tcp" protocol="tcp" port="8087"/>
+        <input auth="anonymous" _name="udp" protocol="udp" port="8087"/>
+        <input auth="x509" _name="wss" protocol="wss" port="8443" coreVersion="2"/>
+        <connector port="8443" _name="https" keystore="JKS" truststore="JKS" context="TLSv1.2"/>
+        <connector port="8080" _name="http"/>
+        <connector port="8444" _name="admin_https" admin="true" keystore="JKS" truststore="JKS" context="TLSv1.2"/>
+        <announce/>
+      </network>
+      <auth x509groups="true" x509addAnonymous="false" default="anonymous">
+        <File location="UserAuthenticationFile.xml"/>
+      </auth>
+      <submission ignoreStaleMessages="false" validateXml="false"/>
+      <subscription reloadPersistent="false"/>
+      <repository enable="true" numDbConnections="4">
+        <connection url="jdbc:postgresql://tak-postgres:5432/cot" username="${DB_USER}" password="${DB_PASSWORD}"/>
+      </repository>
+      <repeater enable="true" periodMillis="3000" staleDelayMillis="15000">
+        <repeaterPort>8087</repeaterPort>
+      </repeater>
+      <filter>
+        <flowtag enable="false"/>
+        <streamingbroker enable="true"/>
+      </filter>
+      <buffer latestSA="true">
+        <queue capacity="100"/>
+      </buffer>
+      <dissemination smartRetry="false"/>
+      <security tls="true">
+        <tls keystore="JKS" keystoreFile="certs/files/takserver.jks" keystorePass="atakatak" truststore="JKS" truststoreFile="certs/files/truststore-root.jks" truststorePass="atakatak" context="TLSv1.2" keymanager="SunX509"/>
+      </security>
+      <plugins/>
+      <cluster/>
+    </Configuration>
+
+  # TAK Ignite cluster configuration (for distributed/clustered deployments)
+  TAKIgniteConfig.xml: |
+    <?xml version="1.0" encoding="UTF-8"?>
+    <beans xmlns="http://www.springframework.org/schema/beans"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd">
+      <bean id="ignite.cfg" class="org.apache.ignite.configuration.IgniteConfiguration">
+        <property name="igniteInstanceName" value="takserver"/>
+        <property name="discoverySpi">
+          <bean class="org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi">
+            <property name="ipFinder">
+              <bean class="org.apache.ignite.spi.discovery.tcp.ipfinder.kubernetes.TcpDiscoveryKubernetesIpFinder">
+                <property name="namespace" value="tak-server"/>
+                <property name="serviceName" value="tak-ignite-discovery"/>
+              </bean>
+            </property>
+          </bean>
+        </property>
+      </bean>
+    </beans>
+
+  # PostGIS init SQL — run once on DB first boot
+  init-db.sql: |
+    CREATE EXTENSION IF NOT EXISTS postgis;
+    CREATE EXTENSION IF NOT EXISTS postgis_topology;
+    CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
+    CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder;

@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: tak-server
+
+resources:
+  - 00-namespace.yaml
+  - 01-secrets.yaml
+  - 02-configmap.yaml
+  - 03-postgres.yaml
+  - 04-shared-resources.yaml
+  - 05-schemamanager-job.yaml
+  - 06-config-deployment.yaml
+  - 07-messaging-deployment.yaml
+  - 08-api-deployment.yaml
+  - 09-ingress.yaml
+  - 10-hpa-networkpolicy.yaml

@@ -1,0 +1,185 @@
+---
+# TAK Server — Messaging Microservice
+# Spring profile: messaging
+# Handles CoT (Cursor-on-Target) message routing between TAK clients.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tak-messaging
+  namespace: tak-server
+  labels:
+    app.kubernetes.io/name: tak-server
+    app.kubernetes.io/component: messaging
+spec:
+  replicas: 1   # Scale up for HA; requires RWX storage and Ignite clustering
+  selector:
+    matchLabels:
+      app: tak-messaging
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: tak-messaging
+        app.kubernetes.io/name: tak-server
+        app.kubernetes.io/component: messaging
+    spec:
+      serviceAccountName: tak-server-sa
+      terminationGracePeriodSeconds: 60
+      initContainers:
+        - name: wait-for-config
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z tak-ignite-discovery 47500; do
+                echo "Waiting for TAK Config service (Ignite)..."; sleep 5;
+              done
+              echo "Config service ready."
+      containers:
+        - name: tak-messaging
+          image: ghcr.io/tak-product-center/takserver-core:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - java
+            - -server
+            - -XX:+AlwaysPreTouch
+            - -XX:+UseG1GC
+            - -XX:+ScavengeBeforeFullGC
+            - -XX:+DisableExplicitGC
+            - -Xmx2g
+            - -Dspring.profiles.active=messaging
+            - -Djava.net.preferIPv4Stack=true
+            - -Djava.security.egd=file:/dev/./urandom
+            - -DIGNITE_UPDATE_NOTIFIER=false
+            - -DIGNITE_QUIET=true
+            - --add-opens=java.base/sun.security.pkcs=ALL-UNNAMED
+            - --add-opens=java.base/sun.security.pkcs10=ALL-UNNAMED
+            - --add-opens=java.base/sun.security.util=ALL-UNNAMED
+            - --add-opens=java.base/sun.security.x509=ALL-UNNAMED
+            - --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED
+            - --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+            - --add-opens=java.base/java.io=ALL-UNNAMED
+            - --add-opens=java.base/java.nio=ALL-UNNAMED
+            - --add-opens=java.base/java.util=ALL-UNNAMED
+            - --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+            - --add-opens=java.base/java.lang=ALL-UNNAMED
+            - --add-opens=jdk.unsupported/sun.misc=ALL-UNNAMED
+            - -jar
+            - /opt/tak/takserver-core.war
+          env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: tak-server-secret
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: tak-server-secret
+                  key: DB_PASSWORD
+            - name: IGNITE_HOME
+              value: /opt/tak/ignite
+          ports:
+            # CoT TCP (anonymous)
+            - name: cot-tcp
+              containerPort: 8087
+              protocol: TCP
+            # CoT UDP
+            - name: cot-udp
+              containerPort: 8087
+              protocol: UDP
+            # CoT TLS (certificate auth)
+            - name: cot-tls
+              containerPort: 8089
+              protocol: TCP
+            # Ignite communication
+            - name: ignite-comm
+              containerPort: 47100
+          volumeMounts:
+            - name: tak-config
+              mountPath: /opt/tak/CoreConfig.xml
+              subPath: CoreConfig.xml
+            - name: tak-ignite-config
+              mountPath: /opt/tak/TAKIgniteConfig.xml
+              subPath: TAKIgniteConfig.xml
+            - name: tak-certs
+              mountPath: /opt/tak/certs
+            - name: tak-logs
+              mountPath: /opt/tak/logs
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "4Gi"
+              cpu: "2000m"
+          livenessProbe:
+            tcpSocket:
+              port: cot-tcp
+            initialDelaySeconds: 90
+            periodSeconds: 20
+            failureThreshold: 5
+          readinessProbe:
+            tcpSocket:
+              port: cot-tcp
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            failureThreshold: 3
+      volumes:
+        - name: tak-config
+          configMap:
+            name: tak-server-config
+            items:
+              - key: CoreConfig.xml
+                path: CoreConfig.xml
+        - name: tak-ignite-config
+          configMap:
+            name: tak-server-config
+            items:
+              - key: TAKIgniteConfig.xml
+                path: TAKIgniteConfig.xml
+        - name: tak-certs
+          persistentVolumeClaim:
+            claimName: tak-certs-pvc
+        - name: tak-logs
+          persistentVolumeClaim:
+            claimName: tak-logs-pvc
+---
+# Service exposing CoT messaging ports to TAK clients
+# Using LoadBalancer type — change to NodePort or ClusterIP as appropriate.
+# CoT TCP/UDP requires L4 load balancing (not HTTP/Ingress).
+apiVersion: v1
+kind: Service
+metadata:
+  name: tak-messaging
+  namespace: tak-server
+  labels:
+    app.kubernetes.io/name: tak-server
+    app.kubernetes.io/component: messaging
+  annotations:
+    # AWS NLB annotation (remove if not on AWS)
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+spec:
+  type: LoadBalancer
+  selector:
+    app: tak-messaging
+  ports:
+    - name: cot-tcp
+      port: 8087
+      targetPort: cot-tcp
+      protocol: TCP
+    - name: cot-udp
+      port: 8087
+      targetPort: cot-udp
+      protocol: UDP
+    - name: cot-tls
+      port: 8089
+      targetPort: cot-tls
+      protocol: TCP
+  # Preserve client source IPs for audit logging
+  externalTrafficPolicy: Local

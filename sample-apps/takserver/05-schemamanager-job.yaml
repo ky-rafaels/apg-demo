@@ -1,0 +1,85 @@
+---
+# Schema Manager Job
+# Runs takserver-schemamanager to apply DB schema migrations.
+# Must complete successfully BEFORE the Config/Messaging/API Deployments start.
+# Re-run this Job any time you upgrade TAK Server to a new version.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: tak-schemamanager
+  namespace: tak-server
+  labels:
+    app.kubernetes.io/name: tak-server
+    app.kubernetes.io/component: schemamanager
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 600   # Auto-clean job pod 10 min after success
+  template:
+    metadata:
+      labels:
+        app: tak-schemamanager
+        app.kubernetes.io/name: tak-server
+        app.kubernetes.io/component: schemamanager
+    spec:
+      serviceAccountName: tak-server-sa
+      restartPolicy: OnFailure
+      initContainers:
+        # Wait for PostgreSQL to be ready before running migrations
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z tak-postgres 5432; do
+                echo "Waiting for PostgreSQL..."; sleep 3;
+              done
+              echo "PostgreSQL is ready."
+      containers:
+        - name: schemamanager
+          # Replace with your actual TAK Server image.
+          # Official images are distributed via tak.gov / Iron Bank.
+          # Community-built image example shown below — verify before use.
+          image: ghcr.io/tak-product-center/takserver-schemamanager:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - java
+            - -jar
+            - /opt/tak/schemamanager.jar
+            - upgrade
+          env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: tak-server-secret
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: tak-server-secret
+                  key: DB_PASSWORD
+            - name: DB_URL
+              value: "jdbc:postgresql://tak-postgres:5432/cot"
+          volumeMounts:
+            - name: tak-config
+              mountPath: /opt/tak/CoreConfig.xml
+              subPath: CoreConfig.xml
+            - name: tak-certs
+              mountPath: /opt/tak/certs
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: tak-config
+          configMap:
+            name: tak-server-config
+            items:
+              - key: CoreConfig.xml
+                path: CoreConfig.xml
+        - name: tak-certs
+          persistentVolumeClaim:
+            claimName: tak-certs-pvc

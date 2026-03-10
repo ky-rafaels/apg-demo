@@ -1,0 +1,135 @@
+---
+# Persistent Volume Claim for PostgreSQL data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tak-postgres-pvc
+  namespace: tak-server
+  labels:
+    app.kubernetes.io/name: tak-server
+    app.kubernetes.io/component: database
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard   # Change to your StorageClass (e.g. gp2, gp3, longhorn)
+  resources:
+    requests:
+      storage: 20Gi
+---
+# Headless Service for stable DNS within the cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: tak-postgres
+  namespace: tak-server
+  labels:
+    app.kubernetes.io/name: tak-server
+    app.kubernetes.io/component: database
+spec:
+  selector:
+    app: tak-postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+  clusterIP: None   # Headless — gives stable DNS: tak-postgres.tak-server.svc.cluster.local
+---
+# PostgreSQL + PostGIS StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: tak-postgres
+  namespace: tak-server
+  labels:
+    app.kubernetes.io/name: tak-server
+    app.kubernetes.io/component: database
+spec:
+  serviceName: tak-postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tak-postgres
+  template:
+    metadata:
+      labels:
+        app: tak-postgres
+        app.kubernetes.io/name: tak-server
+        app.kubernetes.io/component: database
+    spec:
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        fsGroup: 999
+      containers:
+        - name: postgres
+          image: postgis/postgis:15-3.3
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+              name: postgres
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: tak-server-db-secret
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: tak-server-db-secret
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: tak-server-db-secret
+                  key: POSTGRES_DB
+            - name: POSTGRES_HOST_AUTH_METHOD
+              value: "md5"
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+            - name: init-sql
+              mountPath: /docker-entrypoint-initdb.d/init-db.sql
+              subPath: init-db.sql
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - martiuser
+                - -d
+                - cot
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - martiuser
+                - -d
+                - cot
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: tak-postgres-pvc
+        - name: init-sql
+          configMap:
+            name: tak-server-config
+            items:
+              - key: init-db.sql
+                path: init-db.sql

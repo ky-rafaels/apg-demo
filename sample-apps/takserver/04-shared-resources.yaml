@@ -1,0 +1,75 @@
+---
+# PVC for TAK Server TLS certificates (shared across all microservices)
+# Certificates are generated outside the cluster (see certs/README) and then
+# loaded into this PVC via a Job or manually via kubectl cp / init container.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tak-certs-pvc
+  namespace: tak-server
+  labels:
+    app.kubernetes.io/name: tak-server
+    app.kubernetes.io/component: certs
+spec:
+  accessModes:
+    - ReadWriteMany   # Needs to be readable by multiple pods simultaneously.
+                      # Use NFS, CephFS, or EFS. If only RWO is available,
+                      # use a separate cert volume per pod or an init container
+                      # that copies from a Secret/ConfigMap.
+  storageClassName: standard   # Change to an RWX-capable StorageClass
+  resources:
+    requests:
+      storage: 1Gi
+---
+# PVC for TAK Server logs (optional — remove if you use a log aggregator)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tak-logs-pvc
+  namespace: tak-server
+  labels:
+    app.kubernetes.io/name: tak-server
+    app.kubernetes.io/component: logs
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 10Gi
+---
+# ServiceAccount used by TAK Server pods (needed for Ignite K8s discovery)
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tak-server-sa
+  namespace: tak-server
+  labels:
+    app.kubernetes.io/name: tak-server
+---
+# ClusterRole allowing Ignite to discover peers via the K8s API
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tak-ignite-discovery
+  labels:
+    app.kubernetes.io/name: tak-server
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "endpoints"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: tak-ignite-discovery
+  labels:
+    app.kubernetes.io/name: tak-server
+subjects:
+  - kind: ServiceAccount
+    name: tak-server-sa
+    namespace: tak-server
+roleRef:
+  kind: ClusterRole
+  name: tak-ignite-discovery
+  apiGroup: rbac.authorization.k8s.io

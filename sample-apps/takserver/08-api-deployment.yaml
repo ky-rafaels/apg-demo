@@ -1,0 +1,180 @@
+---
+# TAK Server — API Microservice
+# Spring profile: api
+# Exposes the HTTPS REST API and WebSocket (WSS) interface.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tak-api
+  namespace: tak-server
+  labels:
+    app.kubernetes.io/name: tak-server
+    app.kubernetes.io/component: api
+spec:
+  replicas: 1   # Scale up behind a Session-Affinity LoadBalancer for HA
+  selector:
+    matchLabels:
+      app: tak-api
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: tak-api
+        app.kubernetes.io/name: tak-server
+        app.kubernetes.io/component: api
+    spec:
+      serviceAccountName: tak-server-sa
+      terminationGracePeriodSeconds: 60
+      initContainers:
+        - name: wait-for-messaging
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z tak-messaging 8087; do
+                echo "Waiting for TAK Messaging service..."; sleep 5;
+              done
+              echo "Messaging service ready."
+      containers:
+        - name: tak-api
+          image: ghcr.io/tak-product-center/takserver-core:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - java
+            - -server
+            - -XX:+AlwaysPreTouch
+            - -XX:+UseG1GC
+            - -XX:+ScavengeBeforeFullGC
+            - -XX:+DisableExplicitGC
+            - -Xmx2g
+            - -Dspring.profiles.active=api
+            - -Djava.net.preferIPv4Stack=true
+            - -Djava.security.egd=file:/dev/./urandom
+            - -DIGNITE_UPDATE_NOTIFIER=false
+            - -DIGNITE_QUIET=true
+            - -Dkeystore.pkcs12.legacy
+            - --add-opens=java.base/sun.security.pkcs=ALL-UNNAMED
+            - --add-opens=java.base/sun.security.pkcs10=ALL-UNNAMED
+            - --add-opens=java.base/sun.security.util=ALL-UNNAMED
+            - --add-opens=java.base/sun.security.x509=ALL-UNNAMED
+            - --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED
+            - --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+            - --add-opens=java.base/java.io=ALL-UNNAMED
+            - --add-opens=java.base/java.nio=ALL-UNNAMED
+            - --add-opens=java.base/java.util=ALL-UNNAMED
+            - --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+            - --add-opens=java.base/java.lang=ALL-UNNAMED
+            - --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+            - --add-opens=java.base/java.security=ALL-UNNAMED
+            - --add-opens=java.base/javax.net.ssl=ALL-UNNAMED
+            - --add-opens=jdk.unsupported/sun.misc=ALL-UNNAMED
+            - -jar
+            - /opt/tak/takserver-core.war
+          env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: tak-server-secret
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: tak-server-secret
+                  key: DB_PASSWORD
+            - name: IGNITE_HOME
+              value: /opt/tak/ignite
+          ports:
+            # HTTP (redirect to HTTPS)
+            - name: http
+              containerPort: 8080
+            # HTTPS REST API + Swagger UI
+            - name: https
+              containerPort: 8443
+            # HTTPS Admin interface
+            - name: https-admin
+              containerPort: 8444
+            # WebSocket (WSS) for CoT
+            - name: wss
+              containerPort: 8443
+          volumeMounts:
+            - name: tak-config
+              mountPath: /opt/tak/CoreConfig.xml
+              subPath: CoreConfig.xml
+            - name: tak-ignite-config
+              mountPath: /opt/tak/TAKIgniteConfig.xml
+              subPath: TAKIgniteConfig.xml
+            - name: tak-certs
+              mountPath: /opt/tak/certs
+            - name: tak-logs
+              mountPath: /opt/tak/logs
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "4Gi"
+              cpu: "2000m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 120
+            periodSeconds: 20
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 90
+            periodSeconds: 10
+            failureThreshold: 3
+      volumes:
+        - name: tak-config
+          configMap:
+            name: tak-server-config
+            items:
+              - key: CoreConfig.xml
+                path: CoreConfig.xml
+        - name: tak-ignite-config
+          configMap:
+            name: tak-server-config
+            items:
+              - key: TAKIgniteConfig.xml
+                path: TAKIgniteConfig.xml
+        - name: tak-certs
+          persistentVolumeClaim:
+            claimName: tak-certs-pvc
+        - name: tak-logs
+          persistentVolumeClaim:
+            claimName: tak-logs-pvc
+---
+# Internal ClusterIP service for API (accessed via Ingress below)
+apiVersion: v1
+kind: Service
+metadata:
+  name: tak-api
+  namespace: tak-server
+  labels:
+    app.kubernetes.io/name: tak-server
+    app.kubernetes.io/component: api
+spec:
+  type: ClusterIP
+  selector:
+    app: tak-api
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+    - name: https
+      port: 8443
+      targetPort: https
+    - name: https-admin
+      port: 8444
+      targetPort: https-admin
