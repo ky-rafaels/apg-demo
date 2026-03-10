@@ -4,7 +4,6 @@ kind: Kustomization
 namespace: tak-server
 
 resources:
-  - 00-namespace.yaml
   - 01-secrets.yaml
   - 02-configmap.yaml
   - 03-postgres.yaml
