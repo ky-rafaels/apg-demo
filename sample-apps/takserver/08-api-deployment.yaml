@@ -29,17 +29,7 @@ spec:
     spec:
       serviceAccountName: tak-server-sa
       terminationGracePeriodSeconds: 60
-      initContainers:
-        - name: wait-for-messaging
-          image: busybox:1.36
-          command:
-            - sh
-            - -c
-            - |
-              until nc -z tak-messaging 8087; do
-                echo "Waiting for TAK Messaging service..."; sleep 5;
-              done
-              echo "Messaging service ready."
+      restartPolicy: OnFailure
       containers:
         - name: tak-api
           image: ghcr.io/tak-product-center/takserver-core:latest

@@ -29,17 +29,7 @@ spec:
     spec:
       serviceAccountName: tak-server-sa
       terminationGracePeriodSeconds: 60
-      initContainers:
-        - name: wait-for-config
-          image: busybox:1.36
-          command:
-            - sh
-            - -c
-            - |
-              until nc -z tak-ignite-discovery 47500; do
-                echo "Waiting for TAK Config service (Ignite)..."; sleep 5;
-              done
-              echo "Config service ready."
+      restartPolicy: OnFailure
       containers:
         - name: tak-messaging
           image: ghcr.io/tak-product-center/takserver-core:latest

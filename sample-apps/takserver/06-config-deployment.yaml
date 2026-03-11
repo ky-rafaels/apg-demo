@@ -26,17 +26,7 @@ spec:
     spec:
       serviceAccountName: tak-server-sa
       terminationGracePeriodSeconds: 60
-      initContainers:
-        - name: wait-for-postgres
-          image: busybox:1.36
-          command:
-            - sh
-            - -c
-            - |
-              until nc -z tak-postgres 5432; do
-                echo "Waiting for PostgreSQL..."; sleep 3;
-              done
-              echo "PostgreSQL ready."
+      restartPolicy: OnFailure
       containers:
         - name: tak-config
           # Replace with your actual TAK Server WAR image.
