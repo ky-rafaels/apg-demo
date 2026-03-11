@@ -16,7 +16,7 @@ spec:
                       # Use NFS, CephFS, or EFS. If only RWO is available,
                       # use a separate cert volume per pod or an init container
                       # that copies from a Secret/ConfigMap.
-  storageClassName: standard   # Change to an RWX-capable StorageClass
+  storageClassName: localvolumeprovisioner  # Change to an RWX-capable StorageClass
   resources:
     requests:
       storage: 1Gi
@@ -33,7 +33,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteMany
-  storageClassName: standard
+  storageClassName: localvolumeprovisioner
   resources:
     requests:
       storage: 10Gi

@@ -11,7 +11,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: standard   # Change to your StorageClass (e.g. gp2, gp3, longhorn)
+  storageClassName: localvolumeprovisioner   # Change to your StorageClass (e.g. gp2, gp3, longhorn)
   resources:
     requests:
       storage: 20Gi
