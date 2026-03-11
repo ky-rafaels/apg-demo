@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: tak-server
-  labels:
-    app.kubernetes.io/name: tak-server
-    app.kubernetes.io/managed-by: kubectl
