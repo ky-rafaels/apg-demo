@@ -14,4 +14,3 @@ resources:
   - 08-api-deployment.yaml
   - 09-ingress.yaml
   - 10-hpa-networkpolicy.yaml
-  - 11-role-bindings.yaml

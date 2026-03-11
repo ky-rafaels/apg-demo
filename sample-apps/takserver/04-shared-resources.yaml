@@ -47,29 +47,26 @@ metadata:
   labels:
     app.kubernetes.io/name: tak-server
 ---
-# ClusterRole allowing Ignite to discover peers via the K8s API
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: Role
 metadata:
   name: tak-ignite-discovery
-  labels:
-    app.kubernetes.io/name: tak-server
+  namespace: tak-server
 rules:
   - apiGroups: [""]
     resources: ["pods", "endpoints"]
     verbs: ["get", "list", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+kind: RoleBinding
 metadata:
   name: tak-ignite-discovery
-  labels:
-    app.kubernetes.io/name: tak-server
+  namespace: tak-server
 subjects:
   - kind: ServiceAccount
     name: tak-server-sa
     namespace: tak-server
 roleRef:
-  kind: ClusterRole
+  kind: Role
   name: tak-ignite-discovery
   apiGroup: rbac.authorization.k8s.io
