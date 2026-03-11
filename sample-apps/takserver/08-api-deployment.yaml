@@ -89,13 +89,10 @@ spec:
             - name: IGNITE_HOME
               value: /opt/tak/ignite
           ports:
-            # HTTP (redirect to HTTPS)
             - name: http
               containerPort: 8080
-            # HTTPS REST API + Swagger UI
             - name: https
               containerPort: 8443
-            # HTTPS Admin interface
             - name: https-admin
               containerPort: 8444
           volumeMounts:

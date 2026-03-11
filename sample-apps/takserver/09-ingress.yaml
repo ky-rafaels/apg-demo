@@ -26,7 +26,7 @@ metadata:
 spec:
   ingressClassName: kommander-traefik 
   rules:
-    - host: tak.example.com   # <-- CHANGE THIS
+    - host: tak.example.com 
       http:
         paths:
           - path: /
@@ -56,7 +56,7 @@ metadata:
 spec:
   ingressClassName: kommander-traefik
   rules:
-    - host: tak-admin.example.com   # <-- CHANGE THIS
+    - host: tak-admin.example.com 
       http:
         paths:
           - path: /

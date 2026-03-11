@@ -161,9 +161,6 @@ metadata:
   labels:
     app.kubernetes.io/name: tak-server
     app.kubernetes.io/component: messaging
-  annotations:
-    # AWS NLB annotation (remove if not on AWS)
-    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
 spec:
   type: LoadBalancer
   selector:
