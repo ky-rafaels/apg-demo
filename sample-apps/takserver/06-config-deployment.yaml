@@ -26,7 +26,7 @@ spec:
     spec:
       serviceAccountName: tak-server-sa
       terminationGracePeriodSeconds: 60
-      restartPolicy: OnFailure
+      restartPolicy: Always
       containers:
         - name: tak-config
           # Replace with your actual TAK Server WAR image.

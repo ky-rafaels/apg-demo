@@ -29,7 +29,7 @@ spec:
     spec:
       serviceAccountName: tak-server-sa
       terminationGracePeriodSeconds: 60
-      restartPolicy: OnFailure
+      restartPolicy: Always 
       containers:
         - name: tak-api
           image: ghcr.io/tak-product-center/takserver-core:latest
