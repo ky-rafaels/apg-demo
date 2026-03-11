@@ -11,15 +11,12 @@ metadata:
     app.kubernetes.io/name: tak-server
     app.kubernetes.io/component: messaging
 spec:
-  replicas: 1   # Scale up for HA; requires RWX storage and Ignite clustering
+  replicas: 1
   selector:
     matchLabels:
       app: tak-messaging
   strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
+    type: Recreate
   template:
     metadata:
       labels:

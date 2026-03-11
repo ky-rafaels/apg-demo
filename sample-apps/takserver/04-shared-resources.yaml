@@ -12,8 +12,8 @@ metadata:
     app.kubernetes.io/component: certs
 spec:
   accessModes:
-    - ReadWriteMany   # Needs to be readable by multiple pods simultaneously.
-  storageClassName: localvolumeprovisioner  # Change to an RWX-capable StorageClass
+    - ReadWriteOnce
+  storageClassName: localvolumeprovisioner
   resources:
     requests:
       storage: 1Gi
@@ -29,7 +29,7 @@ metadata:
     app.kubernetes.io/component: logs
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   storageClassName: localvolumeprovisioner
   resources:
     requests:
