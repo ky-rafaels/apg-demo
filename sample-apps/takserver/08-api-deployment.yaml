@@ -98,9 +98,6 @@ spec:
             # HTTPS Admin interface
             - name: https-admin
               containerPort: 8444
-            # WebSocket (WSS) for CoT
-            - name: wss
-              containerPort: 8443
           volumeMounts:
             - name: tak-config
               mountPath: /opt/tak/CoreConfig.xml
