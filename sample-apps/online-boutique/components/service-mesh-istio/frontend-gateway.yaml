@@ -19,7 +19,7 @@ metadata:
   annotations:
     cert-manager.io/cluster-issuer: "selfsigned-issuer"  # cert-manager annotation to request a TLS certificate from Let's Encrypt
 spec:
-  gatewayClassName: istio
+  gatewayClassName: kommander-traefik 
   listeners:
   - name: http
     port: 80
