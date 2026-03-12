@@ -17,7 +17,7 @@ kind: Gateway
 metadata:
   name: istio-gateway
   annotations:
-    cert-manager.io/cluster-issuer: "selfsigned-issuer"  # cert-manager annotation to request a TLS certificate from Let's Encrypt
+    cert-manager.io/cluster-issuer: "internal-ca"  # cert-manager annotation to request a TLS certificate from Let's Encrypt
 spec:
   gatewayClassName: kommander-traefik 
   listeners:
