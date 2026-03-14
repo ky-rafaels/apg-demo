@@ -1,58 +1,77 @@
-# Copyright 2018 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# # Copyright 2018 Google LLC
+# #
+# # Licensed under the Apache License, Version 2.0 (the "License");
+# # you may not use this file except in compliance with the License.
+# # You may obtain a copy of the License at
+# #
+# #      http://www.apache.org/licenses/LICENSE-2.0
+# #
+# # Unless required by applicable law or agreed to in writing, software
+# # distributed under the License is distributed on an "AS IS" BASIS,
+# # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# # See the License for the specific language governing permissions and
+# # limitations under the License.
 
-apiVersion: gateway.networking.k8s.io/v1beta1
-kind: Gateway
-metadata:
-  name: istio-gateway
-  annotations:
-    cert-manager.io/cluster-issuer: "internal-ca"  # cert-manager annotation to request a TLS certificate from Let's Encrypt
-spec:
-  gatewayClassName: kommander-traefik 
-  listeners:
-  - name: http
-    port: 80
-    protocol: HTTP
-    allowedRoutes:
-      namespaces:
-        from: Same
-  - name: https
-    port: 443
-    protocol: HTTPS
-    tls:
-      mode: Terminate
-      certificateRefs:
-        - name: tak-tls-cert    # cert-manager creates this Secret automatically
-          kind: Secret
-    allowedRoutes:
-      namespaces:
-        from: Same
+# apiVersion: gateway.networking.k8s.io/v1beta1
+# kind: Gateway
+# metadata:
+#   name: istio-gateway
+#   annotations:
+#     cert-manager.io/cluster-issuer: "kommander-ca"
+# spec:
+#   gatewayClassName: kommander-traefik 
+#   listeners:
+#   - name: https
+#     port: 443
+#     protocol: HTTPS
+#     tls:
+#       mode: Terminate
+#       certificateRefs:
+#         - name: tak-tls-cert  
+#           kind: Secret
+#     allowedRoutes:
+#       namespaces:
+#         from: Same
+# ---
+# apiVersion: gateway.networking.k8s.io/v1beta1
+# kind: HTTPRoute
+# metadata:
+#   name: frontend-route
+# spec:
+#   parentRefs:
+#   - name: istio-gateway
+#   hostnames:
+#   - 'online-boutique.example.com'
+#   rules:
+#   - matches:
+#     - path:
+#         value: /
+#     backendRefs:
+#     - name: frontend
+#       port: 80
 ---
-apiVersion: gateway.networking.k8s.io/v1beta1
-kind: HTTPRoute
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  name: frontend-route
+  name: frontend
+  namespace: online-boutique
+  annotations:
+    cert-manager.io/cluster-issuer: "selfsigned-issuer"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
 spec:
-  parentRefs:
-  - name: istio-gateway
-    sectionName: https
-  hostnames:
-  - 'online-boutique.example.com'
+  ingressClassName: kommander-traefik
+  tls:
+    - hosts:
+        - online-boutique.example.com
+      secretName: online-boutique-tls
   rules:
-  - matches:
-    - path:
-        value: /
-    backendRefs:
-    - name: frontend
-      port: 80
+    - host: online-boutique.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80
