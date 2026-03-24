@@ -1,13 +1,13 @@
 #!/usr/bin/env zsh
 # mirror-namespace-images.sh
-# Pulls all images from pods in a k8s namespace and pushes to a private registry,
-# mirroring the exact source path.
+# Copies all images (all architectures) from pods in a k8s namespace
+# to a private registry, preserving multi-arch manifest lists.
 set -euo pipefail
 
 # ── Usage ─────────────────────────────────────────────────────────────────────
 usage() {
   echo "Usage: $0 <namespace>"
-  echo "  namespace   Kubernetes namespace to pull images from"
+  echo "  namespace   Kubernetes namespace to mirror images from"
   exit 1
 }
 
@@ -16,7 +16,7 @@ NAMESPACE="$1"
 
 # ── Prompt for registry ───────────────────────────────────────────────────────
 read "PRIVATE_REGISTRY?Private registry (e.g. registry.internal.example.com): "
-PRIVATE_REGISTRY="${PRIVATE_REGISTRY%/}"  # strip trailing slash
+PRIVATE_REGISTRY="${PRIVATE_REGISTRY%/}"
 
 if [[ -z "$PRIVATE_REGISTRY" ]]; then
   echo "ERROR: registry cannot be empty" >&2
@@ -24,14 +24,14 @@ if [[ -z "$PRIVATE_REGISTRY" ]]; then
 fi
 
 # ── Dependency check ──────────────────────────────────────────────────────────
-for cmd in kubectl docker; do
+for cmd in kubectl crane; do
   if ! command -v "$cmd" &>/dev/null; then
     echo "ERROR: '$cmd' is required but not found in PATH" >&2
     exit 1
   fi
 done
 
-# ── Collect unique images from all pods in namespace ─────────────────────────
+# ── Collect unique images ─────────────────────────────────────────────────────
 echo ""
 echo "→ Collecting images from namespace: $NAMESPACE"
 
@@ -51,7 +51,7 @@ echo "Found ${#IMAGES[@]} unique image(s):"
 for img in "${IMAGES[@]}"; do echo "  $img"; done
 echo ""
 
-# ── Pull → Tag → Push ─────────────────────────────────────────────────────────
+# ── Copy all architectures ────────────────────────────────────────────────────
 SUCCESS=()
 FAILED=()
 
@@ -62,11 +62,9 @@ for IMAGE in "${IMAGES[@]}"; do
   echo "  SRC:  $IMAGE"
   echo "  DEST: $TARGET"
 
-  if docker pull "$IMAGE" \
-    && docker tag "$IMAGE" "$TARGET" \
-    && docker push "$TARGET"; then
+  # crane copy --platform all preserves the full manifest list (all arches)
+  if crane copy --insecure --platform all "$IMAGE" "$TARGET"; then
     SUCCESS+=("$TARGET")
-    docker rmi "$IMAGE" "$TARGET" &>/dev/null || true
   else
     echo "  ✗ FAILED: $IMAGE" >&2
     FAILED+=("$IMAGE")
