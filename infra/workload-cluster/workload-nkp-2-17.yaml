@@ -490,7 +490,7 @@ spec:
   sshConfig:
     port: 22
     privateKeyRef:
-      name: nkp-2-17-ssh-key
+      name: nkp-workload-1-ssh-key
       namespace: edge-clusters
     user: nutanix
 ---
@@ -715,7 +715,7 @@ spec:
   sshConfig:
     port: 22
     privateKeyRef:
-      name: nkp-2-17-ssh-key
+      name: nkp-workload-1-ssh-key
       namespace: edge-clusters
     user: nutanix
 ---
