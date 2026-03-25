@@ -3,7 +3,7 @@ apiVersion: infrastructure.cluster.konvoy.d2iq.io/v1alpha1
 kind: PreprovisionedInventory
 metadata:
   name: nkp-workload-1-control-plane
-  namespace: default
+  namespace: edge-clusters
   labels:
     cluster.x-k8s.io/cluster-name: nkp-workload-1 
     clusterctl.cluster.x-k8s.io/move: ""
@@ -15,13 +15,13 @@ spec:
     user: nutanix
     privateKeyRef:
       name: nkp-2-17-ssh-key 
-      namespace: default
+      namespace: edge-clusters
 ---
 apiVersion: infrastructure.cluster.konvoy.d2iq.io/v1alpha1
 kind: PreprovisionedInventory
 metadata:
   name: nkp-workload-1-md-0
-  namespace: default
+  namespace: edge-clusters 
   labels:
     cluster.x-k8s.io/cluster-name: nkp-workload-1
     clusterctl.cluster.x-k8s.io/move: ""
@@ -33,4 +33,4 @@ spec:
     user: nutanix
     privateKeyRef:
       name: nkp-2-17-ssh-key
-      namespace: default
+      namespace: edge-clusters
