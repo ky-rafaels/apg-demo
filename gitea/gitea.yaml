@@ -42,7 +42,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
+      storage: 30Gi
   storageClassName: localvolumeprovisioner 
 ---
 apiVersion: v1
@@ -68,7 +68,7 @@ metadata:
   name: gitea
   namespace: gitea
   annotations:
-    cert-manager.io/cluster-issuer: "selfsigned-issuer"
+    cert-manager.io/cluster-issuer: "kommander-ca"
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
 spec:
   ingressClassName: kommander-traefik
