@@ -3,7 +3,7 @@ apiVersion: infrastructure.cluster.konvoy.d2iq.io/v1alpha1
 kind: PreprovisionedInventory
 metadata:
   name: nkp-workload-1-control-plane
-  namespace: default
+  namespace: edge-clusters
   labels:
     cluster.x-k8s.io/cluster-name: nkp-workload-1 
     clusterctl.cluster.x-k8s.io/move: ""
@@ -21,7 +21,7 @@ apiVersion: infrastructure.cluster.konvoy.d2iq.io/v1alpha1
 kind: PreprovisionedInventory
 metadata:
   name: nkp-workload-1-md-0
-  namespace: default
+  namespace: edge-clusters
   labels:
     cluster.x-k8s.io/cluster-name: nkp-workload-1
     clusterctl.cluster.x-k8s.io/move: ""
