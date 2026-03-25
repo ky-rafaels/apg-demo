@@ -14,7 +14,7 @@ spec:
     port: 22
     user: nutanix
     privateKeyRef:
-      name: nkp-workload-1-ssh-key
+      name: nkp-2-17-ssh-key 
       namespace: default
 ---
 apiVersion: infrastructure.cluster.konvoy.d2iq.io/v1alpha1
@@ -32,5 +32,5 @@ spec:
     port: 22
     user: nutanix
     privateKeyRef:
-      name: nkp-workload-1-ssh-key
+      name: nkp-2-17-ssh-key
       namespace: default
