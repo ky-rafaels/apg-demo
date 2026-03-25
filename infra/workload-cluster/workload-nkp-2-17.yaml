@@ -1,6 +1,6 @@
 apiVersion: v1
 data:
-  value: a2luZDogRW5jcnlwdGlvbkNvbmZpZwphcGlWZXJzaW9uOiB2MQpyZXNvdXJjZXM6CiAgLSByZXNvdXJjZXM6CiAgICAgIC0gc2VjcmV0cwogICAgICAtIGNvbmZpZ21hcHMKICAgIHByb3ZpZGVyczoKICAgICAgLSBhZXNjYmM6CiAgICAgICAgICBrZXlzOgogICAgICAgICAgICAtIG5hbWU6IGtleQogICAgICAgICAgICAgIHNlY3JldDogMHJKNVRGN2xjeFVNT2dhei9GQXF1aytaeTY2MndJVlpQSUtlWHBzak9XMD0KICAgICAgLSBpZGVudGl0eToge30=
+  value: a2luZDogRW5jcnlwdGlvbkNvbmZpZwphcGlWZXJzaW9uOiB2MQpyZXNvdXJjZXM6CiAgLSByZXNvdXJjZXM6CiAgICAgIC0gc2VjcmV0cwogICAgICAtIGNvbmZpZ21hcHMKICAgIHByb3ZpZGVyczoKICAgICAgLSBhZXNjYmM6CiAgICAgICAgICBrZXlzOgogICAgICAgICAgICAtIG5hbWU6IGtleQogICAgICAgICAgICAgIHNlY3JldDogWGJZZCtaZzUrbDJsY0lrZXM3S2RpalB5dy9Xc1k0VExzMXcxOXd4UlB0bz0KICAgICAgLSBpZGVudGl0eToge30=
 kind: Secret
 metadata:
   labels:
@@ -18,6 +18,30 @@ metadata:
   labels:
     clusterctl.cluster.x-k8s.io/move: ""
   name: nkp-workload-1-ssh-key
+  namespace: default
+type: Opaque
+---
+apiVersion: v1
+data:
+  mirror: IyBvdmVycmlkZSBhbGwgdGhlIG1pcnJvcnMgY29uZmlndXJhdGlvbgojIENvbnRhaW5lcmQgYXV0b21hdGljYWxseSBhcHBlbmRzIG1pcnJvcnMuImRvY2tlci5pbyIKIyBuZWVkIHRvIGV4cGxpY2l0bHkgb3ZlcnJpZGUgbWlycm9ycy4iZG9ja2VyLmlvIiB3aXRoIHRoZSBtaXJyb3IgdG8gcHVsbCBpbWFnZXMgZnJvbSBkb2NrZXJodWIKW3BsdWdpbnMuImlvLmNvbnRhaW5lcmQuZ3JwYy52MS5jcmkiLnJlZ2lzdHJ5XQogICMgY29uZmlnIHBhdGggYW5kIG1pcnJvcnMgY2Fubm90IGJlIGJvdGggc2V0CiAgY29uZmlnX3BhdGggPSAiIgpbcGx1Z2lucy4iaW8uY29udGFpbmVyZC5ncnBjLnYxLmNyaSIucmVnaXN0cnkubWlycm9yc10KICBbcGx1Z2lucy4iaW8uY29udGFpbmVyZC5ncnBjLnYxLmNyaSIucmVnaXN0cnkubWlycm9ycy4iZG9ja2VyLmlvIl0KICAgIGVuZHBvaW50ID0gWyJodHRwczovL3JlZ2lzdHJ5LmludGVybmFsLmV4YW1wbGUuY29tIiwiaHR0cHM6Ly9yZWdpc3RyeS0xLmRvY2tlci5pbyJdCiAgW3BsdWdpbnMuImlvLmNvbnRhaW5lcmQuZ3JwYy52MS5jcmkiLnJlZ2lzdHJ5Lm1pcnJvcnMuIioiXQogICAgZW5kcG9pbnQgPSBbImh0dHBzOi8vcmVnaXN0cnkuaW50ZXJuYWwuZXhhbXBsZS5jb20iXQpbcGx1Z2lucy4iaW8uY29udGFpbmVyZC5ncnBjLnYxLmNyaSIucmVnaXN0cnkuY29uZmlncy4icmVnaXN0cnkuaW50ZXJuYWwuZXhhbXBsZS5jb20iLnRsc10KICBjYV9maWxlID0gIi9ldGMvY29udGFpbmVyZC9jYS1rb252b3ktbWlycm9yLmNydCI=
+kind: Secret
+metadata:
+  labels:
+    cluster.x-k8s.io/cluster-name: nkp-workload-1
+    clusterctl.cluster.x-k8s.io/move: ""
+  name: nkp-workload-1-control-plane-containerd-configuration
+  namespace: default
+type: Opaque
+---
+apiVersion: v1
+data:
+  mirror: IyBvdmVycmlkZSBhbGwgdGhlIG1pcnJvcnMgY29uZmlndXJhdGlvbgojIENvbnRhaW5lcmQgYXV0b21hdGljYWxseSBhcHBlbmRzIG1pcnJvcnMuImRvY2tlci5pbyIKIyBuZWVkIHRvIGV4cGxpY2l0bHkgb3ZlcnJpZGUgbWlycm9ycy4iZG9ja2VyLmlvIiB3aXRoIHRoZSBtaXJyb3IgdG8gcHVsbCBpbWFnZXMgZnJvbSBkb2NrZXJodWIKW3BsdWdpbnMuImlvLmNvbnRhaW5lcmQuZ3JwYy52MS5jcmkiLnJlZ2lzdHJ5XQogICMgY29uZmlnIHBhdGggYW5kIG1pcnJvcnMgY2Fubm90IGJlIGJvdGggc2V0CiAgY29uZmlnX3BhdGggPSAiIgpbcGx1Z2lucy4iaW8uY29udGFpbmVyZC5ncnBjLnYxLmNyaSIucmVnaXN0cnkubWlycm9yc10KICBbcGx1Z2lucy4iaW8uY29udGFpbmVyZC5ncnBjLnYxLmNyaSIucmVnaXN0cnkubWlycm9ycy4iZG9ja2VyLmlvIl0KICAgIGVuZHBvaW50ID0gWyJodHRwczovL3JlZ2lzdHJ5LmludGVybmFsLmV4YW1wbGUuY29tIiwiaHR0cHM6Ly9yZWdpc3RyeS0xLmRvY2tlci5pbyJdCiAgW3BsdWdpbnMuImlvLmNvbnRhaW5lcmQuZ3JwYy52MS5jcmkiLnJlZ2lzdHJ5Lm1pcnJvcnMuIioiXQogICAgZW5kcG9pbnQgPSBbImh0dHBzOi8vcmVnaXN0cnkuaW50ZXJuYWwuZXhhbXBsZS5jb20iXQpbcGx1Z2lucy4iaW8uY29udGFpbmVyZC5ncnBjLnYxLmNyaSIucmVnaXN0cnkuY29uZmlncy4icmVnaXN0cnkuaW50ZXJuYWwuZXhhbXBsZS5jb20iLnRsc10KICBjYV9maWxlID0gIi9ldGMvY29udGFpbmVyZC9jYS1rb252b3ktbWlycm9yLmNydCI=
+kind: Secret
+metadata:
+  labels:
+    cluster.x-k8s.io/cluster-name: nkp-workload-1
+    clusterctl.cluster.x-k8s.io/move: ""
+  name: nkp-workload-1-md-0-containerd-configuration
   namespace: default
 type: Opaque
 ---
@@ -286,6 +310,25 @@ spec:
         printf >&2 "Appended KubeadmProxyConfiguration to: %s\n" "${modified_files[@]}"
       path: /etc/konvoy/append-kube-proxy-configuration.sh
       permissions: "0700"
+    - contentFrom:
+        secret:
+          key: mirror
+          name: nkp-workload-1-control-plane-containerd-configuration
+      path: /etc/containerd/konvoy-conf.d/konvoy-mirror.toml
+      permissions: "0600"
+    - content: |
+        -----BEGIN CERTIFICATE-----
+        MIIBcDCCARWgAwIBAgIRAP71jOPQISJzrgBZ5bfkPTgwCgYIKoZIzj0EAwIwFzEV
+        MBMGA1UEAxMMa29tbWFuZGVyLWNhMB4XDTI2MDMyNDEzNTMwOVoXDTM2MDMyMTEz
+        NTMwOVowFzEVMBMGA1UEAxMMa29tbWFuZGVyLWNhMFkwEwYHKoZIzj0CAQYIKoZI
+        zj0DAQcDQgAE2srQhzqIYEXuLKuZ+fghBC6mnY3L+MTTXVZOs+pXZFp6P8tY6ftX
+        vmXtPhUFl7zjJoliTOPSNHDx3IUz3VsRJaNCMEAwDgYDVR0PAQH/BAQDAgKkMA8G
+        A1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFJzCQMrNcpHOts3SMpMr+T0vDpkGMAoG
+        CCqGSM49BAMCA0kAMEYCIQDL6ifWRJ2IWzj1qGj/SzT2pNBqac2uLv1VbFaR5SqO
+        8gIhANVj2uUmlIuRzPOuvel9HQ9osfSOjFpryJF9U89uJYAC
+        -----END CERTIFICATE-----
+      path: /etc/containerd/ca-konvoy-mirror.crt
+      permissions: "0644"
     - content: |
         [metrics]
           address = "0.0.0.0:1338"
@@ -546,6 +589,25 @@ spec:
           printf >&2 "Appended KubeadmProxyConfiguration to: %s\n" "${modified_files[@]}"
         path: /etc/konvoy/append-kube-proxy-configuration.sh
         permissions: "0700"
+      - contentFrom:
+          secret:
+            key: mirror
+            name: nkp-workload-1-md-0-containerd-configuration
+        path: /etc/containerd/konvoy-conf.d/konvoy-mirror.toml
+        permissions: "0600"
+      - content: |
+          -----BEGIN CERTIFICATE-----
+          MIIBcDCCARWgAwIBAgIRAP71jOPQISJzrgBZ5bfkPTgwCgYIKoZIzj0EAwIwFzEV
+          MBMGA1UEAxMMa29tbWFuZGVyLWNhMB4XDTI2MDMyNDEzNTMwOVoXDTM2MDMyMTEz
+          NTMwOVowFzEVMBMGA1UEAxMMa29tbWFuZGVyLWNhMFkwEwYHKoZIzj0CAQYIKoZI
+          zj0DAQcDQgAE2srQhzqIYEXuLKuZ+fghBC6mnY3L+MTTXVZOs+pXZFp6P8tY6ftX
+          vmXtPhUFl7zjJoliTOPSNHDx3IUz3VsRJaNCMEAwDgYDVR0PAQH/BAQDAgKkMA8G
+          A1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFJzCQMrNcpHOts3SMpMr+T0vDpkGMAoG
+          CCqGSM49BAMCA0kAMEYCIQDL6ifWRJ2IWzj1qGj/SzT2pNBqac2uLv1VbFaR5SqO
+          8gIhANVj2uUmlIuRzPOuvel9HQ9osfSOjFpryJF9U89uJYAC
+          -----END CERTIFICATE-----
+        path: /etc/containerd/ca-konvoy-mirror.crt
+        permissions: "0644"
       - content: |
           [metrics]
             address = "0.0.0.0:1338"
