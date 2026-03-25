@@ -20,7 +20,7 @@ export SSH_PRIVATE_KEY_FILE=/Users/kylerafaels/.ssh/nkp-control
 ```bash
 nkp create cluster preprovisioned \
 --cluster-name nkp-workload-1 \
---control-plane-endpoint-host 192.168.1.29 \
+--control-plane-endpoint-host 192.168.1.48 \
 --control-plane-replicas 1 \
 --worker-replicas 0 \
 --ssh-private-key-file ${SSH_PRIVATE_KEY_FILE} \
