@@ -110,7 +110,7 @@ nkp create cluster preprovisioned \
 --dry-run -o yaml > ./mgmt-cluster/nkp-2-17.yaml
 ```
 
-Then create the bootstrap and apply manifests.
+### Then create the bootstrap and apply manifests.
 ```console
 $ nkp version
 catalog: v0.8.1
@@ -129,9 +129,45 @@ nkp create bootstrap
 kubectl apply -f ./mgmt/nkp-2-17.yaml
 ```
 
-You can then view the progress by watching logs in `cappp-system`
+#### *~OPTIONAL~*
+------
+If you are running a single node management cluster, this would also be the time to remove any restrictive scheduling taints on the control plane node:
+```bash
+export NODE_NAME=$(kubectl get no --no-headers | awk '{ print $1 }')
+
+# Remove taint so that normal pods can be scheduled on this node
+kubectl taint no ${NODE_NAME} node-role.kubernetes.io/control-plane:NoSchedule-
+
+# The following is required to use the control plane node for running metallb
+kubectl label node ${NODE_NAME}  node.kubernetes.io/exclude-from-external-load-balancers-
+```
+-----
+
+### Create capi components and move cluster resources from bootstrap to mgmt
+
+```console
+$ nkp create capi-components --kubeconfig <path-to-mgmt-kubeconfig>
+
+# Check you are set on the bootstrap context
+$ k config get-contexts
+CURRENT   NAME                            CLUSTER                         AUTHINFO                        NAMESPACE
+*         kind-konvoy-capi-bootstrapper   kind-konvoy-capi-bootstrapper   kind-konvoy-capi-bootstrapper   default
+
+# Move capi resources to management cluster
+$ nkp move capi-resources --to-kubeconfig ~/.kube/nkp-control-plane-onprem.conf
+```
+
+You can then view the progress by watching logs in `cappp-system`. As soon as the kubeconfig is available apply the metallb config and then the Kommander installation config:
+
+```bash
+kubectl apply -f mgmt-cluster/metallb.yaml
+
+nkp install kommander --installer-config ./mgmt-cluster/kommander-install.conf -v5
+```
 
 ## Create preprovisioned cluster templates for workload cluster 
+
+After the management cluster is successfully created, generate the cluster manifests for the workload cluster. 
 
 ```bash
 nkp create cluster preprovisioned \
