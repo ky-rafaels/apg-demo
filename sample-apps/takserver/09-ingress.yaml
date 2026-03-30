@@ -37,8 +37,6 @@ spec:
                 port:
                   number: 8443
 ---
-# Separate Ingress for the Admin UI on port 8444
-# Restrict access by IP using the annotation below
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
