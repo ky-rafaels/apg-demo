@@ -108,7 +108,7 @@ kind: Ingress
 metadata:
   name: keycloak
   annotations:
-    cert-manager.io/cluster-issuer: selfsigned-issuer
+    cert-manager.io/cluster-issuer: kommander-ca 
     kubernetes.io/ingress.class: kommander-traefik
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
     traefik.ingress.kubernetes.io/router.tls: "true"
