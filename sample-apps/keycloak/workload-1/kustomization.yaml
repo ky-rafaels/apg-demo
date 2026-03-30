@@ -4,4 +4,14 @@ kind: Kustomization
 bases:
   - "../base"
 
-namespace: keycloak-workload-1
+patches:
+  - target:
+      kind: Ingress
+      name: keycloak
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: keycloak.workload-1.example.com
+      - op: replace
+        path: /spec/tls/0/hosts/0
+        value: keycloak.workload-1.example.com
