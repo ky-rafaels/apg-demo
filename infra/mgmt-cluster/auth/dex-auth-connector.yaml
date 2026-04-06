@@ -1,0 +1,60 @@
+apiVersion: v1
+data:
+  client-id: <clientId>
+  client-secret: <client-secret>
+kind: Secret
+metadata:
+  labels:
+    kommanderType: connectorSecret
+  name: auth0-secret
+  namespace: kommander
+type: Opaque
+---
+apiVersion: dex.mesosphere.io/v1alpha1
+kind: Connector
+metadata:
+  name: oidc-identity-provider
+  namespace: kommander
+spec:
+  displayName: auth0-oidc
+  enabled: true
+  oidc:
+    basicAuthUnsupported: false
+    clientSecretRef:
+      name: auth0-secret
+    getUserInfo: true
+    insecureEnableGroups: true
+    insecureSkipEmailVerified: false
+    issuer: <issuer, ex: https://dev-rfg8vxywdrlrvrrc.us.auth0.com/>
+    redirectURI: <redirect, ex: https://10.42.170.135/dex/callback>
+    scopes:
+    - openid
+    - profile
+    - email
+    userIDKey: email
+    userNameKey: email
+  type: oidc
+---
+apiVersion: kommander.mesosphere.io/v1beta1
+kind: VirtualGroupClusterRoleBinding
+metadata:
+  name: clusterpolicy-auth0-oidc-vgcrb
+spec:
+  clusterRoleRef:
+    name: kommander-cluster-federated-admin
+  placement:
+    clusterSelector: {}
+  virtualGroupRef:
+    name: auth0-oidc-vg
+---
+apiVersion: kommander.mesosphere.io/v1beta1
+kind: VirtualGroup
+metadata:
+  annotations:
+    kommander.mesosphere.io/display-name: auth0-oidc
+  name: auth0-oidc-vg
+spec:
+  subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: User
+    name: <username, ex: ryan.clair@gmail.com>

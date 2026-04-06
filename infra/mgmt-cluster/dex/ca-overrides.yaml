@@ -1,0 +1,31 @@
+apiVersion: v1
+data:
+  values.yaml: |
+    extraVolumes:
+      - name: keycloak-ca
+        secret:
+          secretName: keycloak-tls
+          items:
+            - key: ca.crt
+              path: ca.crt
+    extraVolumeMounts:
+      - name: keycloak-ca
+        mountPath: /etc/ssl/certs/keycloak-ca.crt
+        subPath: ca.crt
+        readOnly: true
+    env:
+      - name: SSL_CERT_FILE
+        value: /etc/ssl/certs/keycloak-ca.crt
+kind: ConfigMap
+metadata:
+  annotations:
+    config.kubernetes.io/origin: |
+      path: management/dex/dex-cluster-overrides-2.yaml
+  labels:
+    apps.kommander.mesosphere.io/app-id: dex
+    apps.kommander.mesosphere.io/app-version: 2.14.4
+    apps.kommander.mesosphere.io/appdeployment-name: dex
+    kustomize.toolkit.fluxcd.io/name: apps-kommander
+    kustomize.toolkit.fluxcd.io/namespace: kommander
+  name: dex-cluster-overrides-2
+  namespace: kommander
