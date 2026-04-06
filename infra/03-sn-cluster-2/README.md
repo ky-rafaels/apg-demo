@@ -18,7 +18,7 @@ export CONTROL_PLANE_1_ADDRESS="192.168.1.46"
 
 # SSH configuration for node access
 export SSH_USER="konvoy"
-export SSH_PRIVATE_KEY_FILE="~/.ssh/nkp-control"
+export SSH_PRIVATE_KEY_FILE="/Users/kylerafaels/.ssh/nkp-control"
 export SSH_PRIVATE_KEY_SECRET_NAME=${CLUSTER_NAME}-ssh-key
 
 ```bash
@@ -27,11 +27,11 @@ kubectl create secret generic ${SSH_PRIVATE_KEY_SECRET_NAME} \
 kubectl label secret ${SSH_PRIVATE_KEY_SECRET_NAME} clusterctl.cluster.x-k8s.io/move=""
 ```
 
-
 # Create the NKP cluster manifest
 ```bash
 nkp create cluster preprovisioned \
   --cluster-name ${CLUSTER_NAME} \
+  --namespace edge-clusters \
   --control-plane-endpoint-host ${CLUSTER_VIP} \
   --virtual-ip-interface ${CLUSTER_VIP_ETH_INTERFACE} \
   --pre-provisioned-inventory-file=worker-preprovisioned-inventory.yaml \
