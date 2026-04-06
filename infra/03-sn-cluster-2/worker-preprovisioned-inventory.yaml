@@ -1,0 +1,36 @@
+---
+apiVersion: infrastructure.cluster.konvoy.d2iq.io/v1alpha1
+kind: PreprovisionedInventory
+metadata:
+  name: nkp-workload-2-control-plane
+  namespace: edge-clusters
+  labels:
+    cluster.x-k8s.io/cluster-name: nkp-workload-2 
+    clusterctl.cluster.x-k8s.io/move: ""
+spec:
+  hosts:
+    - address: 192.168.1.46
+  sshConfig:
+    port: 22
+    user: nutanix
+    privateKeyRef:
+      name: nkp-workload-2-ssh-key 
+      namespace: edge-clusters
+---
+apiVersion: infrastructure.cluster.konvoy.d2iq.io/v1alpha1
+kind: PreprovisionedInventory
+metadata:
+  name: nkp-workload-2-md-0
+  namespace: edge-clusters 
+  labels:
+    cluster.x-k8s.io/cluster-name: nkp-workload-2
+    clusterctl.cluster.x-k8s.io/move: ""
+spec:
+  hosts:
+    - {} 
+  sshConfig:
+    port: 22
+    user: nutanix
+    privateKeyRef:
+      name: nkp-workload-2-ssh-key
+      namespace: edge-clusters
