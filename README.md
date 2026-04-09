@@ -128,19 +128,15 @@ nkp create bootstrap
 kubectl apply -f ./mgmt/nkp-2-17.yaml
 ```
 
-#### *~OPTIONAL~*
-------
-If you are running a single node management cluster, this would also be the time to remove any restrictive scheduling taints on the control plane node:
-```bash
-export NODE_NAME=$(kubectl get no --no-headers | awk '{ print $1 }')
-
-# Remove taint so that normal pods can be scheduled on this node
-kubectl taint no ${NODE_NAME} node-role.kubernetes.io/control-plane:NoSchedule-
-
-# The following is required to use the control plane node for running metallb
-kubectl label node ${NODE_NAME}  node.kubernetes.io/exclude-from-external-load-balancers-
-```
------
+> [!TIP]
+> If you are running a single node management cluster, this would also be the time to remove any restrictive scheduling taints on the control plane node:
+> ```bash
+> export NODE_NAME=$(kubectl get no --no-headers | awk '{ print $1 }')
+> # Remove taint so that normal pods can be scheduled on this node
+> kubectl taint no ${NODE_NAME} node-role.kubernetes.io/control-plane:NoSchedule-
+> # The following is required to use the control plane node for running metallb
+> kubectl label node ${NODE_NAME}  node.kubernetes.io/exclude-from-external-load-balancers-
+> ```
 
 ### Create capi components and move cluster resources from bootstrap to mgmt
 
