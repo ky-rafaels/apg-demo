@@ -10,7 +10,7 @@
 8. Deploy workload cluster from mgmt
 
 
-# Deployment
+# MGMT Cluster Deployment
 
 ## Prep nodes
 
@@ -25,13 +25,12 @@ ssh nutanix@192.168.1.48 -i /Users/kylerafaels/.ssh/nkp-control
 ssh nutanix@192.168.1.49 -i /Users/kylerafaels/.ssh/nkp-control
 ```
 
-3. Configure each for passwordless sudo access (Demo only)
+3. Run preflight script on each host that will be a cluster node. Script will generate a konvoy user with publickey and passwordless sudo 
 
 ```bash
-visudo
+./preprovisioned-preflight-check.sh
 
-# Add to file
-nutanix ALL=(ALL) NOPASSWD:ALL
+# You will then be prompted to enter the public key to be used for authN user
 ```
 
 4. Each node will be using the localvolumeprovisioner to mount pvs to containers. Configure LVMs on each node for persistent storage. Run the script provided at `./scripts/create-disks.sh` on each node. You should then have a filesystem that looks something like this:
@@ -145,16 +144,16 @@ kubectl label node ${NODE_NAME}  node.kubernetes.io/exclude-from-external-load-b
 
 ### Create capi components and move cluster resources from bootstrap to mgmt
 
-```console
-$ nkp create capi-components --kubeconfig <path-to-mgmt-kubeconfig>
+```bash
+nkp create capi-components --kubeconfig <path-to-mgmt-kubeconfig>
 
 # Check you are set on the bootstrap context
-$ k config get-contexts
+k config get-contexts
 CURRENT   NAME                            CLUSTER                         AUTHINFO                        NAMESPACE
 *         kind-konvoy-capi-bootstrapper   kind-konvoy-capi-bootstrapper   kind-konvoy-capi-bootstrapper   default
 
 # Move capi resources to management cluster
-$ nkp move capi-resources --to-kubeconfig ~/.kube/nkp-control-plane-onprem.conf
+nkp move capi-resources --to-kubeconfig ~/.kube/nkp-control-plane-onprem.conf
 ```
 
 You can then view the progress by watching logs in `cappp-system`. As soon as the kubeconfig is available apply the metallb config and then the Kommander installation config:
@@ -165,7 +164,9 @@ kubectl apply -f mgmt-cluster/metallb.yaml
 nkp install kommander --installer-config ./mgmt-cluster/kommander-install.conf -v5
 ```
 
-## Create preprovisioned cluster templates for workload cluster 
+[!NOTE]
+
+<!-- ## Create preprovisioned cluster templates for workload cluster 
 
 After the management cluster is successfully created, generate the cluster manifests for the workload cluster. 
 
@@ -181,4 +182,4 @@ nkp create cluster preprovisioned \
 --registry-mirror-url https://registry.internal.example.com \
 --registry-mirror-cacert /Users/kylerafaels/Projects/nutanix/apg/mgmt-certs/registry-ca.crt \
 --dry-run -o yaml > workload-nkp-2-17.yaml
-```
+``` -->

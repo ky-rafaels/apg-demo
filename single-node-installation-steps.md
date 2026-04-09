@@ -27,17 +27,46 @@ kubectl create secret generic ${SSH_PRIVATE_KEY_SECRET_NAME} \
 kubectl label secret ${SSH_PRIVATE_KEY_SECRET_NAME} clusterctl.cluster.x-k8s.io/move=""
 ```
 
-# Create package bundle
+# Create and upload package bundle
 
 ```bash
 # Ensure you are in unpacked airgap bundle 
 nkp create package-bundle ubuntu-22.04 --artifacts-directory image-artifacts/
+
+# TEMP Create an override dir for cloud-init fix
+mkdir override
 
 nkp upload image-artifacts \
 --artifacts-directory ./image-artifacts \
 --ssh-host 192.168.1.46 \
 --ssh-username nutanix \
 --ssh-private-key-file /Users/kylerafaels/.ssh/nkp-control
+--to-directory override
+
+# Add ansible task to install cloud-init, temporary fix 
+cat override/playbooks/upload-artifacts.yaml | tail -14
+- hosts: all
+  name: install cloud-init
+  gather_facts: false
+  become: true
+  tasks:
+  - name: Install cloud-init from local offline repo
+    ansible.builtin.command:
+      cmd: >-
+        dnf install -y
+        --repofrompath="local,/opt/dkp/packages/offline-repo"
+        --repo="local"
+        --nogpgcheck
+        cloud-init
+    become: true
+
+# Upload artifacts
+nkp upload image-artifacts \
+--artifacts-directory ./image-artifacts \
+--ssh-host 192.168.1.46 \
+--ssh-username konvoy \
+--ssh-private-key-file /Users/kylerafaels/.ssh/nkp-control \
+--from-directory override
 ```
 
 # Create the NKP cluster manifest
@@ -56,4 +85,22 @@ nkp create cluster preprovisioned \
   --output=yaml \
   > ${CLUSTER_NAME}.yaml
   ```
-  --virtual-ip-interface ${CLUSTER_VIP_ETH_INTERFACE} \
+
+# Apply Cluster manifests
+
+Next apply the cluster manifests either directly to the management cluster via `kubectl` or in Kommander console 
+
+```bash
+kubectl apply -f ${CLUSTER_NAME}.yaml
+```
+
+Then view logs of cappp controller manager in `cappp-system` namespace to ensure no errors.
+
+# Remove taints for scheduling
+
+```bash
+export NODE_NAME=$(kubectl get no --no-headers | awk '{ print $1 }')
+kubectl taint no ${NODE_NAME} node-role.kubernetes.io/control-plane:NoSchedule-
+# The following is required to use the control plane node for running metallb
+kubectl label node ${NODE_NAME}  node.kubernetes.io/exclude-from-external-load-balancers-
+```
