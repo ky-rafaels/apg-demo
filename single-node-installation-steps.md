@@ -10,7 +10,7 @@
 # Kubernetes API Server VIP (must be on same subnet as your nodes)
 `export CLUSTER_VIP="192.168.1.46"`
 
-# Control plane node IP addresses (minimum 3 for production)
+# Control plane node IP addresses
 `export CONTROL_PLANE_1_ADDRESS="192.168.1.46"`
 
 # SSH configuration for node access
@@ -91,7 +91,8 @@ Next apply the cluster manifests either directly to the management cluster via `
 kubectl apply -f ${CLUSTER_NAME}.yaml
 ```
 
-Then view logs of cappp controller manager in `cappp-system` namespace to ensure no errors.
+> [!TIP]
+> Then view logs of cappp controller manager in `cappp-system` namespace to ensure no errors.
 
 # Remove taints for scheduling
 

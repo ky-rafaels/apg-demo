@@ -160,8 +160,6 @@ kubectl apply -f mgmt-cluster/metallb.yaml
 nkp install kommander --installer-config ./mgmt-cluster/kommander-install.conf -v5
 ```
 
-[!NOTE]
-
 <!-- ## Create preprovisioned cluster templates for workload cluster 
 
 After the management cluster is successfully created, generate the cluster manifests for the workload cluster. 
