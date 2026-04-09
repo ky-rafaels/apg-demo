@@ -12,7 +12,7 @@ spec:
     - address: 192.168.1.46
   sshConfig:
     port: 22
-    user: nutanix
+    user: konvoy 
     privateKeyRef:
       name: nkp-workload-2-ssh-key 
       namespace: edge-clusters
@@ -30,7 +30,7 @@ spec:
     - {} 
   sshConfig:
     port: 22
-    user: nutanix
+    user: konvoy
     privateKeyRef:
       name: nkp-workload-2-ssh-key
       namespace: edge-clusters

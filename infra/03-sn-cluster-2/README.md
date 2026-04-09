@@ -17,7 +17,7 @@ export CLUSTER_VIP_ETH_INTERFACE="enp3s0"
 export CONTROL_PLANE_1_ADDRESS="192.168.1.46"
 
 # SSH configuration for node access
-export SSH_USER="konvoy"
+export SSH_USER="nutanix"
 export SSH_PRIVATE_KEY_FILE="/Users/kylerafaels/.ssh/nkp-control"
 export SSH_PRIVATE_KEY_SECRET_NAME=${CLUSTER_NAME}-ssh-key
 
@@ -27,20 +27,33 @@ kubectl create secret generic ${SSH_PRIVATE_KEY_SECRET_NAME} \
 kubectl label secret ${SSH_PRIVATE_KEY_SECRET_NAME} clusterctl.cluster.x-k8s.io/move=""
 ```
 
+# Create package bundle
+
+```bash
+# Ensure you are in unpacked airgap bundle 
+nkp create package-bundle ubuntu-22.04 --artifacts-directory image-artifacts/
+
+nkp upload image-artifacts \
+--artifacts-directory ./image-artifacts \
+--ssh-host 192.168.1.46 \
+--ssh-username nutanix \
+--ssh-private-key-file /Users/kylerafaels/.ssh/nkp-control
+```
+
 # Create the NKP cluster manifest
 ```bash
 nkp create cluster preprovisioned \
-  --cluster-name ${CLUSTER_NAME} \
-  --namespace edge-clusters \
-  --control-plane-endpoint-host ${CLUSTER_VIP} \
-  --virtual-ip-interface ${CLUSTER_VIP_ETH_INTERFACE} \
+  --cluster-name=${CLUSTER_NAME} \
+  --namespace=edge-clusters \
+  --control-plane-endpoint-host=${CLUSTER_VIP} \
   --pre-provisioned-inventory-file=worker-preprovisioned-inventory.yaml \
   --ssh-private-key-file=${SSH_PRIVATE_KEY_FILE} \
   --registry-mirror-url=${REGISTRY_URL} \
   --registry-mirror-cacert=${REGISTRY_CA} \
-  --control-plane-replicas 1 \
+  --control-plane-replicas=1 \
   --worker-replicas=0 \
   --dry-run \
   --output=yaml \
   > ${CLUSTER_NAME}.yaml
   ```
+  --virtual-ip-interface ${CLUSTER_VIP_ETH_INTERFACE} \

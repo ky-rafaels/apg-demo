@@ -78,31 +78,34 @@ ensure_konvoy_user() {
 ensure_ssh_pubkey() {
   info "Checking SSH public key authentication..."
 
-  # Prompt for key if not provided via environment
-  if [[ -z "${KONVOY_PUBKEY}" ]]; then
-    read -r -p "Paste the SSH public key to authorize for '${KONVOY_USER}': " KONVOY_PUBKEY
-    [[ -n "${KONVOY_PUBKEY}" ]] || die "No public key provided."
+  # Prompt for key path if not provided via environment
+  if [[ -z "${KONVOY_PUBKEY_FILE}" ]]; then
+    read -r -p "Path to SSH public key file for '${KONVOY_USER}': " KONVOY_PUBKEY_FILE
   fi
+
+  [[ -n "${KONVOY_PUBKEY_FILE}" ]]  || die "No public key file path provided."
+  [[ -f "${KONVOY_PUBKEY_FILE}" ]]  || die "Public key file not found: ${KONVOY_PUBKEY_FILE}"
+  [[ -r "${KONVOY_PUBKEY_FILE}" ]]  || die "Public key file is not readable: ${KONVOY_PUBKEY_FILE}"
+
+  local pubkey
+  pubkey="$(cat "${KONVOY_PUBKEY_FILE}")"
+  [[ -n "${pubkey}" ]] || die "Public key file is empty: ${KONVOY_PUBKEY_FILE}"
 
   local ssh_dir="/home/${KONVOY_USER}/.ssh"
   local auth_keys="${ssh_dir}/authorized_keys"
 
-  # Create ~/.ssh with correct permissions
   if [[ ! -d "${ssh_dir}" ]]; then
     install -d -m 700 -o "${KONVOY_USER}" -g "${KONVOY_USER}" "${ssh_dir}"
   fi
 
-  # Add the key if it isn't already present
-  if ! grep -qF "${KONVOY_PUBKEY}" "${auth_keys}" 2>/dev/null; then
+  if ! grep -qF "${pubkey}" "${auth_keys}" 2>/dev/null; then
     info "Adding public key to ${auth_keys}."
-    echo "${KONVOY_PUBKEY}" >> "${auth_keys}"
+    echo "${pubkey}" >> "${auth_keys}"
   fi
 
-  # Lock down permissions (sshd will reject keys with wrong perms)
   chmod 600 "${auth_keys}"
   chown "${KONVOY_USER}:${KONVOY_USER}" "${auth_keys}"
 
-  # Ensure sshd allows pubkey auth (non-destructive — only patches if needed)
   local sshd_cfg="/etc/ssh/sshd_config"
   if grep -qE '^\s*#?\s*PubkeyAuthentication\s+no' "${sshd_cfg}"; then
     warn "PubkeyAuthentication is disabled in sshd_config — enabling."
