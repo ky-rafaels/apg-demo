@@ -65,7 +65,8 @@ metadata:
     clusterctl.cluster.x-k8s.io/move: ""
 spec:
   hosts:
-    - address: 192.168.1.48
+    - address: 192.168.1.47
+    - address: 192.168.1.49
   sshConfig:
     port: 22
     user: nutanix
