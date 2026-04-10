@@ -21,7 +21,6 @@ First, prep each of the nodes for the management cluster and the workload cluste
 
 ```bash
 ssh nutanix@192.168.1.47 -i /Users/kylerafaels/.ssh/nkp-control
-ssh nutanix@192.168.1.48 -i /Users/kylerafaels/.ssh/nkp-control
 ssh nutanix@192.168.1.49 -i /Users/kylerafaels/.ssh/nkp-control
 ```
 
