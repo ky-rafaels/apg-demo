@@ -21,7 +21,6 @@ First, prep each of the nodes for the management cluster and the workload cluste
 
 ```bash
 ssh nutanix@192.168.1.47 -i /Users/kylerafaels/.ssh/nkp-control
-ssh nutanix@192.168.1.48 -i /Users/kylerafaels/.ssh/nkp-control
 ssh nutanix@192.168.1.49 -i /Users/kylerafaels/.ssh/nkp-control
 ```
 
@@ -66,7 +65,8 @@ metadata:
     clusterctl.cluster.x-k8s.io/move: ""
 spec:
   hosts:
-    - address: 192.168.1.48
+    - address: 192.168.1.47
+    - address: 192.168.1.49
   sshConfig:
     port: 22
     user: nutanix
