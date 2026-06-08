@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VG=ubuntu--vg
+VG=ubuntu-vg
 
 #Create logical volumes to be used by k8s PV's
 sudo lvcreate -L 30G -n 10000001 $VG
@@ -28,6 +28,8 @@ sudo mkfs -F -t ext4 /dev/mapper/$VG-10000007
 
 #Make base mount directory under /mnt
 sudo mkdir -p /mnt/disks
+
+VG=ubuntu--vg
 
 #Mount 11G volumes
 DISK_UUID=$(sudo blkid -s UUID -o value blkid /dev/mapper/$VG-10000001)
