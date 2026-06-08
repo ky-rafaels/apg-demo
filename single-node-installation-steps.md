@@ -14,13 +14,16 @@
 `export CONTROL_PLANE_1_ADDRESS="192.168.1.46"`
 
 # SSH configuration for node access
-`export SSH_USER="nutanix"`
-`export SSH_PRIVATE_KEY_FILE="/Users/kylerafaels/.ssh/nkp-control"`
-`export SSH_PRIVATE_KEY_SECRET_NAME=${CLUSTER_NAME}-ssh-key`
+```bash
+export SSH_USER="nutanix"
+export SSH_PRIVATE_KEY_FILE="/Users/kylerafaels/.ssh/nkp-control"
+export SSH_PRIVATE_KEY_SECRET_NAME=${CLUSTER_NAME}-ssh-key
+```
 
 ```bash
 kubectl create secret generic ${SSH_PRIVATE_KEY_SECRET_NAME} \
   --from-file=ssh-privatekey="${SSH_PRIVATE_KEY_FILE}"
+  
 kubectl label secret ${SSH_PRIVATE_KEY_SECRET_NAME} clusterctl.cluster.x-k8s.io/move=""
 ```
 
