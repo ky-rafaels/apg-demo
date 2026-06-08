@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# prereq-check.sh — Ensure NKP/Konvoy node prerequisites on Ubuntu 22.04
+# prereq-check.sh — Ensure NKP node prerequisites on Ubuntu 22.04
 # Run as root or with sudo
 
 set -euo pipefail
 
 # ── Config ────────────────────────────────────────────────────────────────────
-KONVOY_USER="${KONVOY_USER:-konvoy}"
-KONVOY_PUBKEY="${KONVOY_PUBKEY:-}"          # Set via env or prompted at runtime
+NUTANIX_USER="${NUTANIX_USER:-nutanix}"
+NUTANIX_PUBKEY_FILE="${NUTANIX_PUBKEY_FILE:-}"   # Set via env or prompted at runtime
 LOG_PREFIX="[prereq]"
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -44,34 +44,34 @@ ensure_swap_disabled() {
   success "Swap is disabled and masked."
 }
 
-# ── 2. Create konvoy user with passwordless sudo ──────────────────────────────
-ensure_konvoy_user() {
-  info "Checking user '${KONVOY_USER}'..."
+# ── 2. Create nutanix user with passwordless sudo ─────────────────────────────
+ensure_nutanix_user() {
+  info "Checking user '${NUTANIX_USER}'..."
 
-  if ! id "${KONVOY_USER}" &>/dev/null; then
-    info "User '${KONVOY_USER}' not found — creating."
+  if ! id "${NUTANIX_USER}" &>/dev/null; then
+    info "User '${NUTANIX_USER}' not found — creating."
     useradd \
       --create-home \
       --shell /bin/bash \
-      --comment "NKP Konvoy service account" \
-      "${KONVOY_USER}"
+      --comment "NKP service account" \
+      "${NUTANIX_USER}"
   else
-    success "User '${KONVOY_USER}' already exists."
+    success "User '${NUTANIX_USER}' already exists."
   fi
 
   # Write a dedicated sudoers drop-in (safer than editing /etc/sudoers directly)
-  local sudoers_file="/etc/sudoers.d/99-${KONVOY_USER}"
-  local sudoers_line="${KONVOY_USER} ALL=(ALL) NOPASSWD:ALL"
+  local sudoers_file="/etc/sudoers.d/99-${NUTANIX_USER}"
+  local sudoers_line="${NUTANIX_USER} ALL=(ALL) NOPASSWD:ALL"
 
   if [[ ! -f "${sudoers_file}" ]] || ! grep -qF "${sudoers_line}" "${sudoers_file}"; then
-    info "Configuring passwordless sudo for '${KONVOY_USER}'."
+    info "Configuring passwordless sudo for '${NUTANIX_USER}'."
     echo "${sudoers_line}" > "${sudoers_file}"
     chmod 0440 "${sudoers_file}"
     # Validate the file before committing
     visudo -cf "${sudoers_file}" || die "sudoers syntax check failed — aborting."
   fi
 
-  success "User '${KONVOY_USER}' has passwordless sudo."
+  success "User '${NUTANIX_USER}' has passwordless sudo."
 }
 
 # ── 3. Configure SSH public key authentication ────────────────────────────────
@@ -79,23 +79,23 @@ ensure_ssh_pubkey() {
   info "Checking SSH public key authentication..."
 
   # Prompt for key path if not provided via environment
-  if [[ -z "${KONVOY_PUBKEY_FILE}" ]]; then
-    read -r -p "Path to SSH public key file for '${KONVOY_USER}': " KONVOY_PUBKEY_FILE
+  if [[ -z "${NUTANIX_PUBKEY_FILE}" ]]; then
+    read -r -p "Path to SSH public key file for '${NUTANIX_USER}': " NUTANIX_PUBKEY_FILE
   fi
 
-  [[ -n "${KONVOY_PUBKEY_FILE}" ]]  || die "No public key file path provided."
-  [[ -f "${KONVOY_PUBKEY_FILE}" ]]  || die "Public key file not found: ${KONVOY_PUBKEY_FILE}"
-  [[ -r "${KONVOY_PUBKEY_FILE}" ]]  || die "Public key file is not readable: ${KONVOY_PUBKEY_FILE}"
+  [[ -n "${NUTANIX_PUBKEY_FILE}" ]]  || die "No public key file path provided."
+  [[ -f "${NUTANIX_PUBKEY_FILE}" ]]  || die "Public key file not found: ${NUTANIX_PUBKEY_FILE}"
+  [[ -r "${NUTANIX_PUBKEY_FILE}" ]]  || die "Public key file is not readable: ${NUTANIX_PUBKEY_FILE}"
 
   local pubkey
-  pubkey="$(cat "${KONVOY_PUBKEY_FILE}")"
-  [[ -n "${pubkey}" ]] || die "Public key file is empty: ${KONVOY_PUBKEY_FILE}"
+  pubkey="$(cat "${NUTANIX_PUBKEY_FILE}")"
+  [[ -n "${pubkey}" ]] || die "Public key file is empty: ${NUTANIX_PUBKEY_FILE}"
 
-  local ssh_dir="/home/${KONVOY_USER}/.ssh"
+  local ssh_dir="/home/${NUTANIX_USER}/.ssh"
   local auth_keys="${ssh_dir}/authorized_keys"
 
   if [[ ! -d "${ssh_dir}" ]]; then
-    install -d -m 700 -o "${KONVOY_USER}" -g "${KONVOY_USER}" "${ssh_dir}"
+    install -d -m 700 -o "${NUTANIX_USER}" -g "${NUTANIX_USER}" "${ssh_dir}"
   fi
 
   if ! grep -qF "${pubkey}" "${auth_keys}" 2>/dev/null; then
@@ -104,7 +104,7 @@ ensure_ssh_pubkey() {
   fi
 
   chmod 600 "${auth_keys}"
-  chown "${KONVOY_USER}:${KONVOY_USER}" "${auth_keys}"
+  chown "${NUTANIX_USER}:${NUTANIX_USER}" "${auth_keys}"
 
   local sshd_cfg="/etc/ssh/sshd_config"
   if grep -qE '^\s*#?\s*PubkeyAuthentication\s+no' "${sshd_cfg}"; then
@@ -120,31 +120,6 @@ ensure_ssh_pubkey() {
   success "SSH public key authentication is configured."
 }
 
-# ── 4. Enable iSCSI daemon ────────────────────────────────────────────────────
-ensure_iscsi() {
-  info "Checking iSCSI daemon (iscsid)..."
-
-  # Install open-iscsi if missing
-  if ! dpkg -l open-iscsi 2>/dev/null | grep -q '^ii'; then
-    info "open-iscsi not installed — installing."
-    apt-get update -qq
-    DEBIAN_FRONTEND=noninteractive apt-get install -y open-iscsi
-  fi
-
-  # Enable and start iscsid
-  if ! systemctl is-enabled iscsid &>/dev/null; then
-    info "Enabling iscsid service."
-    systemctl enable iscsid
-  fi
-
-  if ! systemctl is-active --quiet iscsid; then
-    info "Starting iscsid service."
-    systemctl start iscsid
-  fi
-
-  success "iSCSI daemon is enabled and running."
-}
-
 # ── Main ──────────────────────────────────────────────────────────────────────
 main() {
   require_root
@@ -157,11 +132,9 @@ main() {
 
   ensure_swap_disabled
   echo ""
-  ensure_konvoy_user
+  ensure_nutanix_user
   echo ""
   ensure_ssh_pubkey
-  echo ""
-  ensure_iscsi
   echo ""
 
   echo "════════════════════════════════════════════"
