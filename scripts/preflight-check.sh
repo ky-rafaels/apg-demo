@@ -5,8 +5,8 @@
 set -euo pipefail
 
 # ── Config ────────────────────────────────────────────────────────────────────
-NUTANIX_USER="${NUTANIX_USER:-nutanix}"
-NUTANIX_PUBKEY_FILE="${NUTANIX_PUBKEY_FILE:-}"   # Set via env or prompted at runtime
+NUTANIX_USER="${NUTANIX_USER:-}"
+NUTANIX_PUBKEY="${NUTANIX_PUBKEY:-}"   # Set via env or prompted at runtime
 LOG_PREFIX="[prereq]"
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -46,6 +46,12 @@ ensure_swap_disabled() {
 
 # ── 2. Create nutanix user with passwordless sudo ─────────────────────────────
 ensure_nutanix_user() {
+  if [[ -z "${NUTANIX_USER}" ]]; then
+    read -r -p "Username to create: " NUTANIX_USER
+  fi
+
+  [[ -n "${NUTANIX_USER}" ]] || die "No username provided."
+
   info "Checking user '${NUTANIX_USER}'..."
 
   if ! id "${NUTANIX_USER}" &>/dev/null; then
@@ -78,18 +84,14 @@ ensure_nutanix_user() {
 ensure_ssh_pubkey() {
   info "Checking SSH public key authentication..."
 
-  # Prompt for key path if not provided via environment
-  if [[ -z "${NUTANIX_PUBKEY_FILE}" ]]; then
-    read -r -p "Path to SSH public key file for '${NUTANIX_USER}': " NUTANIX_PUBKEY_FILE
+  # Prompt for key string if not provided via environment
+  if [[ -z "${NUTANIX_PUBKEY}" ]]; then
+    read -r -p "SSH public key for '${NUTANIX_USER}': " NUTANIX_PUBKEY
   fi
 
-  [[ -n "${NUTANIX_PUBKEY_FILE}" ]]  || die "No public key file path provided."
-  [[ -f "${NUTANIX_PUBKEY_FILE}" ]]  || die "Public key file not found: ${NUTANIX_PUBKEY_FILE}"
-  [[ -r "${NUTANIX_PUBKEY_FILE}" ]]  || die "Public key file is not readable: ${NUTANIX_PUBKEY_FILE}"
+  [[ -n "${NUTANIX_PUBKEY}" ]] || die "No public key provided."
 
-  local pubkey
-  pubkey="$(cat "${NUTANIX_PUBKEY_FILE}")"
-  [[ -n "${pubkey}" ]] || die "Public key file is empty: ${NUTANIX_PUBKEY_FILE}"
+  local pubkey="${NUTANIX_PUBKEY}"
 
   local ssh_dir="/home/${NUTANIX_USER}/.ssh"
   local auth_keys="${ssh_dir}/authorized_keys"
