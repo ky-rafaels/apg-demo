@@ -14,6 +14,8 @@ sudo lvcreate -L 100G -n 10000005 $VG
 sudo lvcreate -L 100G -n 10000006 $VG
 sudo lvcreate -L 100G -n 10000007 $VG
 
+VG=ubuntu--vg
+
 #Make filesystem for logical volumes
 sudo mkfs -F -t ext4 /dev/mapper/$VG-10000001
 sudo mkfs -F -t ext4 /dev/mapper/$VG-10000002
@@ -28,8 +30,6 @@ sudo mkfs -F -t ext4 /dev/mapper/$VG-10000007
 
 #Make base mount directory under /mnt
 sudo mkdir -p /mnt/disks
-
-VG=ubuntu--vg
 
 #Mount 11G volumes
 DISK_UUID=$(sudo blkid -s UUID -o value blkid /dev/mapper/$VG-10000001)
