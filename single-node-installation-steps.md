@@ -72,14 +72,15 @@ nkp upload image-artifacts \
 # Create the NKP cluster manifest
 ```bash
 nkp create cluster preprovisioned \
-  --cluster-name=nkp-workload-2 \
-  --namespace=edge-clusters \
-  --control-plane-endpoint-host=${CLUSTER_VIP} \
-  --pre-provisioned-inventory-file=worker-preprovisioned-inventory.yaml \
-  --ssh-private-key-file=${SSH_PRIVATE_KEY_FILE} \
-  --ssh-username=nutanix \
+  --cluster-name nkp-b300-nai \
+  --control-plane-endpoint-host ${CONTROL_PLANE_VIP} \
+  --pre-provisioned-inventory-file preprovisioned_inventory.yaml \
+  --ssh-private-key-file ~/.ssh/id_rsa \
+  --ssh-username nutanix \
   --control-plane-replicas=1 \
   --worker-replicas=0 \
+  --timeout 60m \
+  --namespace edge-clusters
   --dry-run \
   --output=yaml \
   > ${CLUSTER_NAME}.yaml
