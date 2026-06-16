@@ -80,7 +80,6 @@ nkp create cluster preprovisioned \
   --control-plane-replicas=1 \
   --worker-replicas=0 \
   --timeout 60m \
-  --namespace edge-clusters
   --dry-run \
   --output=yaml \
   > ${CLUSTER_NAME}.yaml
