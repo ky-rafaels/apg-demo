@@ -92,6 +92,8 @@ nkp create cluster preprovisioned \
   --pre-provisioned-inventory-file preprovisioned_inventory.yaml \
   --ssh-private-key-file ~/.ssh/id_rsa \
   --ssh-username nutanix \
+  --control-plane-replicas=1 \
+  --worker-replicas=0 \
   --timeout 60m \
   --namespace edge-clusters
   ```
