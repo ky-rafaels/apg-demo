@@ -87,6 +87,7 @@ nkp create cluster preprovisioned \
 nkp create cluster preprovisioned \
   --cluster-name nkp-workload-3 \
   --control-plane-endpoint-host 192.168.1.48 \
+  --virtual-ip-interface ens192 \  # what the NIC is that holds the static ip
   --pre-provisioned-inventory-file preprovisioned_inventory.yaml \
   --ssh-private-key-file /Users/kylerafaels/.ssh/nkp-control \
   --ssh-username nutanix \
@@ -102,6 +103,7 @@ nkp create cluster preprovisioned \
 nkp create cluster preprovisioned \
   --cluster-name nkp-b300-nai \
   --control-plane-endpoint-host ${CONTROL_PLANE_VIP} \
+  --virtual-ip-interface ens192 \  # what the NIC is that holds the static ip
   --pre-provisioned-inventory-file preprovisioned_inventory.yaml \
   --ssh-private-key-file ~/.ssh/id_rsa \
   --ssh-username nutanix \
