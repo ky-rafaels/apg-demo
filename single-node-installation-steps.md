@@ -87,13 +87,13 @@ nkp create cluster preprovisioned \
 ## OR APPLY DIRECTLY
 
 nkp create cluster preprovisioned \
-  --cluster-name nkp-workload-2 \
+  --cluster-name nkp-b300-nai \
   --control-plane-endpoint-host ${CONTROL_PLANE_VIP} \
   --pre-provisioned-inventory-file preprovisioned_inventory.yaml \
   --ssh-private-key-file ~/.ssh/id_rsa \
   --ssh-username nutanix \
   --timeout 60m \
-  --namespace ${WORKSPACE_NAMESPACE}
+  --namespace edge-clusters
   ```
 
 # Apply Cluster manifests
