@@ -22,9 +22,9 @@ export SSH_PRIVATE_KEY_SECRET_NAME=${CLUSTER_NAME}-ssh-key
 
 ```bash
 kubectl create secret generic ${SSH_PRIVATE_KEY_SECRET_NAME} \
-  --from-file=ssh-privatekey="${SSH_PRIVATE_KEY_FILE}"
+  --from-file=ssh-privatekey="${SSH_PRIVATE_KEY_FILE}" -n edge-clusters
   
-kubectl label secret ${SSH_PRIVATE_KEY_SECRET_NAME} clusterctl.cluster.x-k8s.io/move=""
+kubectl label secret ${SSH_PRIVATE_KEY_SECRET_NAME} clusterctl.cluster.x-k8s.io/move="" -n edge-clusters
 ```
 
 # Create and upload package bundle
