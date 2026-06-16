@@ -84,6 +84,19 @@ nkp create cluster preprovisioned \
   --output=yaml \
   > ${CLUSTER_NAME}.yaml
 
+nkp create cluster preprovisioned \
+  --cluster-name nkp-workload-3 \
+  --control-plane-endpoint-host 192.168.1.48 \
+  --pre-provisioned-inventory-file preprovisioned_inventory.yaml \
+  --ssh-private-key-file /Users/kylerafaels/.ssh/nkp-control \
+  --ssh-username nutanix \
+  --control-plane-replicas=1 \
+  --worker-replicas=0 \
+  --timeout 60m \
+  --dry-run \
+  --output=yaml \
+  > ${CLUSTER_NAME}.yaml
+
 ## OR APPLY DIRECTLY
 
 nkp create cluster preprovisioned \
