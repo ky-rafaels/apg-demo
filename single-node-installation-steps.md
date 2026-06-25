@@ -41,7 +41,7 @@ nkp upload image-artifacts \
 --ssh-host 192.168.1.46 \
 --ssh-username nutanix \
 --ssh-private-key-file /Users/kylerafaels/.ssh/nkp-control
---to-directory override
+--output-directory override
 
 # Add ansible task to install cloud-init, temporary fix 
 cat override/playbooks/upload-artifacts.yaml | tail -14
