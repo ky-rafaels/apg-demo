@@ -86,19 +86,6 @@ nkp upload image-artifacts \
 # Create the NKP cluster manifest
 ```bash
 nkp create cluster preprovisioned \
-  --cluster-name nkp-b300-nai \
-  --control-plane-endpoint-host ${CONTROL_PLANE_VIP} \
-  --pre-provisioned-inventory-file preprovisioned_inventory.yaml \
-  --ssh-private-key-file ~/.ssh/id_rsa \
-  --ssh-username nutanix \
-  --control-plane-replicas=1 \
-  --worker-replicas=0 \
-  --timeout 60m \
-  --dry-run \
-  --output=yaml \
-  > ${CLUSTER_NAME}.yaml
-
-nkp create cluster preprovisioned \
   --cluster-name nkp-workload-3 \
   --control-plane-endpoint-host 192.168.1.48 \
   --virtual-ip-interface ens192 \  # what the NIC is that holds the static ip
@@ -108,6 +95,10 @@ nkp create cluster preprovisioned \
   --control-plane-replicas=1 \
   --worker-replicas=0 \
   --timeout 60m \
+  --registry-mirror-url harbor.example.com \
+  --registry-mirror-cacert <path-to-cert> \
+  --registry-mirror-password <password> \
+  --registry-mirror-username harbor-user \
   --dry-run \
   --output=yaml \
   > ${CLUSTER_NAME}.yaml
