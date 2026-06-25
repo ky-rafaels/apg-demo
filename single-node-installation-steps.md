@@ -43,6 +43,7 @@ nkp upload image-artifacts \
 --ssh-private-key-file /Users/kylerafaels/.ssh/nkp-control
 --output-directory override
 
+# ROCKY OR RHEL
 # Add ansible task to install cloud-init, temporary fix 
 cat override/playbooks/upload-artifacts.yaml | tail -14
 - hosts: all
@@ -59,6 +60,19 @@ cat override/playbooks/upload-artifacts.yaml | tail -14
         --nogpgcheck
         cloud-init
     become: true
+
+# UBUNTU
+- hosts: all
+  name: install cloud-init
+  gather_facts: false
+  become: true
+  tasks:
+  - name: Install cloud-init from local .deb files
+    ansible.builtin.shell: |
+      dpkg -i /opt/dkp/packages/offline-repo/cloud-init*.deb
+      apt-get install -f -y
+    args:
+      executable: /bin/bash
 
 # Upload artifacts
 nkp upload image-artifacts \
