@@ -69,7 +69,7 @@ cat override/playbooks/upload-artifacts.yaml | tail -14
 # Upload artifacts
 nkp upload image-artifacts \
 --artifacts-directory ./image-artifacts \
---ssh-host 192.168.1.46 \
+--ssh-host 192.168.1.46 \ # can also put a list of IPs here
 --ssh-username konvoy \
 --ssh-private-key-file /Users/kylerafaels/.ssh/nkp-control \
 --from-directory override
@@ -94,21 +94,7 @@ nkp create cluster preprovisioned \
   --dry-run \
   --output=yaml \
   > ${CLUSTER_NAME}.yaml
-
-## OR APPLY DIRECTLY
-
-nkp create cluster preprovisioned \
-  --cluster-name nkp-b300-nai \
-  --control-plane-endpoint-host ${CONTROL_PLANE_VIP} \
-  --virtual-ip-interface ens192 \  # what the NIC is that holds the static ip
-  --pre-provisioned-inventory-file preprovisioned_inventory.yaml \
-  --ssh-private-key-file ~/.ssh/id_rsa \
-  --ssh-username nutanix \
-  --control-plane-replicas=1 \
-  --worker-replicas=0 \
-  --timeout 60m \
-  --namespace edge-clusters
-  ```
+```
 
 # Apply Cluster manifests
 
