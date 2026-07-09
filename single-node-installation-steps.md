@@ -1,20 +1,12 @@
-# Container registry configuration
-`export REGISTRY_URL="https://registry.internal.example.com"`
+# export cluster configuration
+```bash
+export REGISTRY_URL="https://registry.internal.example.com"
 <!-- export REGISTRY_USERNAME="admin" -->
 <!-- export REGISTRY_PASSWORD="SuperSecurePassword" -->
-`export REGISTRY_CA="/Users/kylerafaels/Projects/nutanix/apg/mgmt-certs/registry-ca.crt"`
-
-# Cluster configuration
-`export CLUSTER_NAME="nkp-workload-2"`
-
-# Kubernetes API Server VIP (must be on same subnet as your nodes)
-`export CLUSTER_VIP="192.168.1.46"`
-
-# Control plane node IP addresses
-`export CONTROL_PLANE_1_ADDRESS="192.168.1.46"`
-
-# SSH configuration for node access
-```bash
+export REGISTRY_CA="/Users/kylerafaels/Projects/nutanix/apg/mgmt-certs/registry-ca.crt"
+export CLUSTER_NAME="nkp-workload-2"
+export CLUSTER_VIP="192.168.1.46"
+export CONTROL_PLANE_1_ADDRESS="192.168.1.46"
 export SSH_USER="nutanix"
 export SSH_PRIVATE_KEY_FILE="/Users/kylerafaels/.ssh/nkp-control"
 export SSH_PRIVATE_KEY_SECRET_NAME=${CLUSTER_NAME}-ssh-key
