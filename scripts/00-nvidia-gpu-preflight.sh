@@ -201,7 +201,45 @@ install_storage_packages() {
   success "NFS and block storage packages installed and services running."
 }
 
-# ── 9. Check internet/apt repo access ────────────────────────────────────────
+# ── 9. Kubernetes node prerequisites ─────────────────────────────────────────
+configure_k8s_prereqs() {
+  info "Configuring Kubernetes node prerequisites..."
+
+  # Disable swap (required by kubelet)
+  swapoff -a
+  sed -i "/ swap / s/^/#/" /etc/fstab
+  success "Swap disabled."
+
+  # Load required kernel modules
+  modprobe overlay
+  modprobe br_netfilter
+  echo "overlay"      | tee /etc/modules-load.d/k8s.conf  >/dev/null
+  echo "br_netfilter" | tee -a /etc/modules-load.d/k8s.conf >/dev/null
+  success "Kernel modules overlay and br_netfilter loaded."
+
+  # Apply required sysctl settings
+  {
+    echo "net.bridge.bridge-nf-call-iptables = 1"
+    echo "net.bridge.bridge-nf-call-ip6tables = 1"
+    echo "net.ipv4.ip_forward = 1"
+  } | tee /etc/sysctl.d/k8s.conf >/dev/null
+  sysctl --system &>/dev/null
+  success "sysctl settings applied."
+
+  # Disable firewall
+  ufw disable
+  success "ufw disabled."
+
+  # Remove any pre-existing Kubernetes packages and repo list
+  apt-get remove -y kubelet kubeadm kubectl kubernetes-cni >/dev/null 2>&1 || true
+  rm -f /etc/apt/sources.list.d/kubernetes*.list
+  success "Existing Kubernetes packages and repo list removed."
+
+  apt-get update >/dev/null
+  success "apt package lists refreshed."
+}
+
+# ── 10. Check internet/apt repo access ───────────────────────────────────────
 check_apt_connectivity() {
   info "Checking apt repository connectivity..."
 
@@ -244,6 +282,8 @@ main() {
   check_nouveau
   echo ""
   check_existing_driver
+  echo ""
+  configure_k8s_prereqs
   echo ""
   check_apt_connectivity
   echo ""
