@@ -122,6 +122,39 @@ ensure_ssh_pubkey() {
   success "SSH public key authentication is configured."
 }
 
+# ── 4. Kubernetes node prerequisites ─────────────────────────────────────────
+configure_k8s_prereqs() {
+  info "Configuring Kubernetes node prerequisites..."
+
+  # Load required kernel modules
+  modprobe overlay
+  modprobe br_netfilter
+  echo "overlay"      | tee /etc/modules-load.d/k8s.conf  >/dev/null
+  echo "br_netfilter" | tee -a /etc/modules-load.d/k8s.conf >/dev/null
+  success "Kernel modules overlay and br_netfilter loaded."
+
+  # Apply required sysctl settings
+  {
+    echo "net.bridge.bridge-nf-call-iptables = 1"
+    echo "net.bridge.bridge-nf-call-ip6tables = 1"
+    echo "net.ipv4.ip_forward = 1"
+  } | tee /etc/sysctl.d/k8s.conf >/dev/null
+  sysctl --system &>/dev/null
+  success "sysctl settings applied."
+
+  # Disable firewall
+  ufw disable
+  success "ufw disabled."
+
+  # Remove any pre-existing Kubernetes packages and repo list
+  apt-get remove -y kubelet kubeadm kubectl kubernetes-cni >/dev/null 2>&1 || true
+  rm -f /etc/apt/sources.list.d/kubernetes*.list
+  success "Existing Kubernetes packages and repo list removed."
+
+  apt-get update >/dev/null
+  success "apt package lists refreshed."
+}
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 main() {
   require_root
@@ -133,6 +166,8 @@ main() {
   echo ""
 
   ensure_swap_disabled
+  echo ""
+  configure_k8s_prereqs
   echo ""
   ensure_nutanix_user
   echo ""
