@@ -1,4 +1,4 @@
-# APG Demo Deployment Steps
+# Deployment Steps
 
 1. Prep workload and mgmt cluster nodes by installing rocky linux on single node 
 2. Deploy mgmt cluster 
