@@ -1,0 +1,15 @@
+# kubectl run curl -it --rm --image=docker.io/curlimages/curl -- sh
+# cgr.dev/chainguard/curl:latest
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: curl
+spec:
+  restartPolicy: Never
+  containers:
+    - name: curl
+      image: docker.io/curlimages/curl
+      command: ["sh"]
+      stdin: true
+      tty: true

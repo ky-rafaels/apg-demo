@@ -1,6 +1,6 @@
 #cloud-config
-hostname: nkp-nai-cp-01
-fqdn: nkp-nai-cp-01.yourdomain.local
+hostname: nkp-cp-01
+fqdn: nkp-cp-01.yourdomain.local
 manage_etc_hosts: true
 preserve_hostname: false
 users:
@@ -10,7 +10,7 @@ users:
     lock_passwd: false
     plain_text_passwd: "nutanix/4u"
     ssh_authorized_keys:
-      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEX7AWYR0QYe1Q74rrQcqjAq7wcNotSjPWAxqoYfXdCX kylerafaels@MacBookPro.lan 
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHLf5jGHLqRHj7Y8NP9KwqYnIEK30N2PmiOLu7eEMb5W root@kyle-bastion 
 ssh_pwauth: true
 disable_root: false
 swap:
