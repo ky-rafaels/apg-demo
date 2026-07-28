@@ -13,3 +13,15 @@ patches:
     - op: replace
       path: /spec/tls/0/hosts
       value: ["httpbin.10.38.48.141.nip.io"]
+# - target:
+#     kind: Deployment
+#   patch: |-
+# #     - op: replace 
+# #       path: /spec/template/spec/containers/0/image
+# #       value: "docker.io/kennethreitz/httpbin:v2"
+- target:
+    kind: Deployment
+  patch: |-
+    - op: replace
+      path: /spec/replicas
+      value: 2
